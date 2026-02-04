@@ -472,7 +472,7 @@ Broadcasts seeding rule messages when the server is below a player count thresho
 | `seedingMessage` | Message broadcast when seeding | `"Seeding Rules Active!..."` |
 | `liveEnabled` | Enable "Live" announcements | `true` |
 | `liveThreshold` | Player count for "Live" message | `52` |
-| `liveMessage` | Message when server goes live | `"Live!"` |
+| `liveMessage` | Message when server goes live | `"Server is now LIVE! Normal rules apply."` |
 | `interval` | Broadcast interval (ms) | `150000` |
 | `waitOnNewGames` | Pause broadcasts after new game starts | `true` |
 | `waitTimeOnNewGame` | How long to pause (ms) | `30000` |
@@ -603,7 +603,7 @@ Provides an admin command to randomize team assignments.
   "plugin": "PlayerWelcome",
   "enabled": true,
   "options": {
-    "message": "Welcome to the server, {name}!"
+    "newPlayerMessage": "Welcome to the server, {player}!"
   }
 }
 ```
@@ -644,7 +644,7 @@ Provides an admin command to randomize team assignments.
   "plugin": "SquadNameEnforcer",
   "enabled": true,
   "options": {
-    "bannedWords": ["offensive", "words"],
+    "blockedWords": ["offensive", "words"],
     "warnMessage": "Please rename your squad appropriately"
   }
 }
@@ -701,9 +701,8 @@ Provides an admin command to randomize team assignments.
   "enabled": true,
   "options": {
     "channelID": "123456789012345678",
-    "chatChannels": ["ChatAll", "ChatTeam", "ChatSquad"],
     "ignoreChats": ["ChatSquad"],
-    "color": 16761867
+    "color": 16766720
   },
   "connectors": { "discordClient": "discord" }
 }
@@ -712,9 +711,9 @@ Provides an admin command to randomize team assignments.
 | Option | Description | Default |
 |--------|-------------|---------|
 | `channelID` | Discord channel ID for chat relay | **Required** |
-| `chatChannels` | In-game chat channels to relay | `["ChatAll"]` |
 | `ignoreChats` | Chat channels to ignore | `[]` |
-| `color` | Embed color | `16761867` |
+| `color` | Default embed color | `0xffd700` (gold) |
+| `chatColors` | Colors for specific chat channels | `{}` |
 
 </details>
 
@@ -727,8 +726,8 @@ Provides an admin command to randomize team assignments.
   "enabled": true,
   "options": {
     "channelID": "123456789012345678",
-    "color": 16761867,
-    "disableCBL": false
+    "color": 16711680,
+    "includeCBL": true
   },
   "connectors": { "discordClient": "discord" }
 }
@@ -767,7 +766,7 @@ Provides an admin command to randomize team assignments.
   "options": {
     "channelID": "123456789012345678",
     "updateInterval": 60000,
-    "setBotStatus": true
+    "showNextLayer": true
   },
   "connectors": { "discordClient": "discord" }
 }
@@ -818,8 +817,8 @@ Provides an admin command to randomize team assignments.
   "enabled": true,
   "options": {
     "channelID": "123456789012345678",
-    "color": 16761867,
-    "disableCBL": false
+    "includeWounds": false,
+    "includeTeamkillsOnly": false
   },
   "connectors": { "discordClient": "discord" }
 }
@@ -853,8 +852,7 @@ Provides an admin command to randomize team assignments.
   "enabled": true,
   "options": {
     "channelID": "123456789012345678",
-    "color": 16761867,
-    "useEmbed": true
+    "color": 3329330
   },
   "connectors": { "discordClient": "discord" }
 }
@@ -878,7 +876,7 @@ Alerts admins when players with Community Ban List (CBL) reputation join.
     "threshold": 1,
     "pingGroups": ["987654321098765432"],
     "pingHere": false,
-    "color": 16721988
+    "color": 16729156
   },
   "connectors": { "discordClient": "discord" }
 }
@@ -1126,7 +1124,7 @@ this.log.verbose('Verbose message');
 // RCON Commands
 await this.rcon.warn(eosID, 'Message');
 await this.rcon.kick(eosID, 'Reason');
-await this.rcon.ban(steamID, 'Reason', duration);
+await this.rcon.ban(steamID, '1d', 'Reason');  // (target, duration, reason)
 await this.rcon.broadcast('Server-wide message');
 await this.rcon.execute('RawCommand');
 
@@ -1236,7 +1234,8 @@ SquadScript/
 ├── projects/
 │   ├── core/         # Main SquadServer class and plugin system
 │   └── plugins/      # Official plugin collection
-└── config.json       # Your server configuration
+├── config.json       # Your server configuration (create this)
+└── package.json      # Workspace root
 ```
 
 ## Development
