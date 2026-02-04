@@ -76,8 +76,23 @@
         "typescript": "^5.9.2",
       },
     },
-    "projects/core": {
-      "name": "@squadscript/core",
+    "projects/plugins": {
+      "name": "@squadscript/plugins",
+      "version": "0.1.0",
+      "dependencies": {
+        "@socket.io/bun-engine": "^0.1.0",
+        "@squadscript/server": "workspace:*",
+        "@squadscript/types": "workspace:*",
+        "elysia": "^1.4.22",
+        "socket.io": "^4.8.3",
+      },
+      "devDependencies": {
+        "@types/bun": "^1.3.8",
+        "typescript": "^5.9.2",
+      },
+    },
+    "projects/server": {
+      "name": "@squadscript/server",
       "version": "0.1.0",
       "dependencies": {
         "@squadscript/config": "workspace:*",
@@ -85,21 +100,6 @@
         "@squadscript/logger": "workspace:*",
         "@squadscript/rcon": "workspace:*",
         "@squadscript/types": "workspace:*",
-      },
-      "devDependencies": {
-        "@types/bun": "^1.3.8",
-        "typescript": "^5.9.2",
-      },
-    },
-    "projects/plugins": {
-      "name": "@squadscript/plugins",
-      "version": "0.1.0",
-      "dependencies": {
-        "@socket.io/bun-engine": "^0.1.0",
-        "@squadscript/core": "workspace:*",
-        "@squadscript/types": "workspace:*",
-        "elysia": "^1.4.22",
-        "socket.io": "^4.8.3",
       },
       "devDependencies": {
         "@types/bun": "^1.3.8",
@@ -136,8 +136,6 @@
 
     "@squadscript/config": ["@squadscript/config@workspace:packages/config"],
 
-    "@squadscript/core": ["@squadscript/core@workspace:projects/core"],
-
     "@squadscript/log-parser": ["@squadscript/log-parser@workspace:packages/log-parser"],
 
     "@squadscript/logger": ["@squadscript/logger@workspace:packages/logger"],
@@ -145,6 +143,8 @@
     "@squadscript/plugins": ["@squadscript/plugins@workspace:projects/plugins"],
 
     "@squadscript/rcon": ["@squadscript/rcon@workspace:packages/rcon"],
+
+    "@squadscript/server": ["@squadscript/server@workspace:projects/server"],
 
     "@squadscript/types": ["@squadscript/types@workspace:packages/types"],
 
