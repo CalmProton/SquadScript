@@ -82,6 +82,24 @@ export { SeedingMode } from "./seeding-mode.js";
 export { TeamRandomizer } from "./team-randomizer.js";
 
 // =============================================================================
+// Entertainment & QoL Plugins
+// =============================================================================
+
+export { FirstBlood } from "./first-blood.js";
+export { PlayerWelcome } from "./player-welcome.js";
+export { RevengeTracker } from "./revenge-tracker.js";
+export { RoundStatsSummary } from "./round-stats-summary.js";
+
+// =============================================================================
+// Squad Management Plugins
+// =============================================================================
+
+export { OrphanSquadLogger } from "./orphan-squad-logger.js";
+export { SquadLeaderChangeAlert } from "./squad-leader-change-alert.js";
+export { SquadNameEnforcer } from "./squad-name-enforcer.js";
+export { VehicleClaimTracker } from "./vehicle-claim-tracker.js";
+
+// =============================================================================
 // Discord Plugins
 // =============================================================================
 
