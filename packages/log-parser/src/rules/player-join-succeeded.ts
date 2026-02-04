@@ -30,6 +30,12 @@ export const playerJoinSucceededRule = defineRule<PlayerJoinSucceededEvent>({
   parse(match, context) {
     const [raw, timestamp, chainIDStr, playerSuffix] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !chainIDStr || !playerSuffix) {
+      context.logger.warn('player-join-succeeded', 'Missing required fields in join succeeded event');
+      return null;
+    }
+
     const time = parseLogTimestamp(timestamp);
     if (!time) {
       context.logger.warn('player-join-succeeded', 'Failed to parse timestamp in join succeeded event');

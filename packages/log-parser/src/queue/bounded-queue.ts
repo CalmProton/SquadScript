@@ -93,8 +93,8 @@ export class BoundedQueue<T> {
   private readonly items: T[] = [];
   private readonly maxSize: number;
   private readonly highWaterMark: number;
-  private readonly onHighWaterMark?: (depth: number, maxSize: number) => void;
-  private readonly onDrop?: (droppedCount: number) => void;
+  private readonly onHighWaterMark?: ((depth: number, maxSize: number) => void) | undefined;
+  private readonly onDrop?: ((droppedCount: number) => void) | undefined;
 
   private totalEnqueued = 0;
   private totalDequeued = 0;

@@ -30,6 +30,12 @@ export const deployableDamagedRule = defineRule<DeployableDamagedEvent>({
   parse(match, context) {
     const [raw, timestamp, , deployable, damageStr, weapon, playerSuffix, _damageType, _healthRemaining] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !deployable || !damageStr || !weapon || !playerSuffix) {
+      context.logger.warn('deployable-damaged', 'Missing required fields in deployable damaged event');
+      return null;
+    }
+
     const time = parseLogTimestamp(timestamp);
     if (!time) {
       context.logger.warn('deployable-damaged', 'Failed to parse timestamp in deployable damaged event');

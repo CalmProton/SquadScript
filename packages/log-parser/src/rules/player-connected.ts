@@ -32,6 +32,12 @@ export const playerConnectedRule = defineRule<PlayerConnectedEvent>({
   parse(match, context) {
     const [raw, timestamp, chainIDStr, controller, ip, idsString] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !chainIDStr || !controller || !ip || !idsString) {
+      context.logger.warn('player-connected', 'Missing required fields in player connected event');
+      return null;
+    }
+
     // Bail on invalid IDs
     if (hasInvalidIDs(idsString)) {
       context.logger.verbose('player-connected', 'Skipping player connected with invalid IDs');

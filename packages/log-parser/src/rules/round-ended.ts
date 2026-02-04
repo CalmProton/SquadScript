@@ -30,6 +30,12 @@ export const roundEndedRule = defineRule<RoundEndedEvent>({
   parse(match, context) {
     const [raw, timestamp] = match;
 
+    // Ensure required groups matched
+    if (!timestamp) {
+      context.logger.warn('round-ended', 'Missing timestamp in round ended event');
+      return null;
+    }
+
     const time = parseLogTimestamp(timestamp);
     if (!time) {
       context.logger.warn('round-ended', 'Failed to parse timestamp in round ended event');

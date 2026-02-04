@@ -33,6 +33,12 @@ export const roundTicketsRule = defineRule<RoundTicketsEvent>({
   parse(match, context) {
     const [raw, timestamp, , team, subfaction, faction, action, ticketsStr, layer, level] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !team || !subfaction || !faction || !action || !ticketsStr || !layer || !level) {
+      context.logger.warn('round-tickets', 'Missing required fields in round tickets event');
+      return null;
+    }
+
     const time = parseLogTimestamp(timestamp);
     if (!time) {
       context.logger.warn('round-tickets', 'Failed to parse timestamp in round tickets event');

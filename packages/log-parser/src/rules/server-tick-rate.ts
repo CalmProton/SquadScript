@@ -29,6 +29,12 @@ export const serverTickRateRule = defineRule<ServerTickRateEvent>({
   parse(match, context) {
     const [raw, timestamp, , tickRateStr] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !tickRateStr) {
+      context.logger.warn('server-tick-rate', 'Missing required fields in server tick rate event');
+      return null;
+    }
+
     const time = parseLogTimestamp(timestamp);
     if (!time) {
       context.logger.warn('server-tick-rate', 'Failed to parse timestamp in server tick rate event');

@@ -48,6 +48,11 @@ export function parseLogTimestamp(timestamp: string): Date | null {
 
   const [, year, month, day, hour, minute, second, ms] = match;
 
+  // Ensure all groups matched
+  if (!year || !month || !day || !hour || !minute || !second || !ms) {
+    return null;
+  }
+
   // Parse as integers
   const y = parseInt(year, 10);
   const mo = parseInt(month, 10) - 1; // JavaScript months are 0-indexed

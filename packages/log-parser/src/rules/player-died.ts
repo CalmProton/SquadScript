@@ -31,6 +31,12 @@ export const playerDiedRule = defineRule<PlayerDiedEvent>({
   parse(match, context) {
     const [raw, timestamp, chainIDStr, victimName, damageStr, _attackerPlayerController, idsString, attackerController, weapon] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !chainIDStr || !victimName || !damageStr || !idsString || !attackerController || !weapon) {
+      context.logger.warn('player-died', 'Missing required fields in player died event');
+      return null;
+    }
+
     // Bail on invalid IDs
     if (hasInvalidIDs(idsString)) {
       context.logger.verbose('player-died', 'Skipping player died with invalid IDs');
@@ -52,17 +58,17 @@ export const playerDiedRule = defineRule<PlayerDiedEvent>({
       return null;
     }
 
-    // Get session data from previous damage/wound events
-    const session = context.store.getSession(victimName);
+    // Get session data from previous damage/wound events - use fallback for type safety
+    const session = context.store.getSession(victimName ?? '');
 
-    // Clean up session data
-    context.store.deleteSession(victimName);
+    // Clean up session data - use fallback for type safety
+    context.store.deleteSession(victimName ?? '');
 
     // Get stored attacker data
     const storedAttacker = context.store.getPlayer(ids.eosID);
 
     // Build attacker player object (may be null for suicide)
-    const isSuicide = victimName === (storedAttacker?.name ?? session?.lastDamage?.attackerName);
+    const isSuicide = (victimName ?? '') === (storedAttacker?.name ?? session?.lastDamage?.attackerName);
 
     const attacker: Player | null = isSuicide ? null : {
       playerID: asPlayerID(0)!,
@@ -82,7 +88,7 @@ export const playerDiedRule = defineRule<PlayerDiedEvent>({
       playerID: asPlayerID(0)!,
       eosID: ids.eosID, // Placeholder - will be resolved
       steamID: null,
-      name: victimName,
+      name: victimName ?? 'Unknown',
       teamID: null,
       squadID: null,
       isSquadLeader: false,
@@ -97,7 +103,7 @@ export const playerDiedRule = defineRule<PlayerDiedEvent>({
       chainID: chainID ?? asChainID(0)!,
       attacker,
       victim,
-      weapon,
+      weapon: weapon ?? null,
       damage,
       suicide: isSuicide,
     });

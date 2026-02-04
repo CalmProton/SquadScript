@@ -31,6 +31,12 @@ export const playerUnpossessRule = defineRule<PlayerUnpossessEvent>({
   parse(match, context) {
     const [raw, timestamp, chainIDStr, playerSuffix, idsString] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !chainIDStr || !playerSuffix || !idsString) {
+      context.logger.warn('player-unpossess', 'Missing required fields in player unpossess event');
+      return null;
+    }
+
     // Bail on invalid IDs
     if (hasInvalidIDs(idsString)) {
       context.logger.verbose('player-unpossess', 'Skipping player unpossess with invalid IDs');
@@ -65,13 +71,13 @@ export const playerUnpossessRule = defineRule<PlayerUnpossessEvent>({
       playerID: asPlayerID(0)!, // Will be resolved by SquadServer
       eosID: ids.eosID,
       steamID: storedPlayer?.steamID ?? ids.steamID,
-      name: storedPlayer?.name ?? playerSuffix,
+      name: storedPlayer?.name ?? playerSuffix ?? 'Unknown',
       teamID: null,
       squadID: null,
       isSquadLeader: false,
       role: null,
       controller: controllerValue,
-      suffix: playerSuffix,
+      suffix: playerSuffix ?? null,
     };
 
     // Calculate possess time if we have session data

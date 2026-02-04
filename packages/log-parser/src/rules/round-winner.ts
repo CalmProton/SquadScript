@@ -34,6 +34,12 @@ export const roundWinnerRule = defineRule<RoundWinnerEvent>({
   parse(match, context) {
     const [raw, timestamp, , winner, layer] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !winner || !layer) {
+      context.logger.warn('round-winner', 'Missing required fields in round winner event');
+      return null;
+    }
+
     const time = parseLogTimestamp(timestamp);
     if (!time) {
       context.logger.warn('round-winner', 'Failed to parse timestamp in round winner event');

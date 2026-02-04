@@ -86,22 +86,22 @@ export class ConnectionError extends RconError {
   readonly recoverable: boolean;
 
   /** The underlying socket error, if any. */
-  override readonly cause?: Error;
+  override readonly cause?: Error | undefined;
 
   /** Server host that failed to connect. */
-  readonly host?: string;
+  readonly host?: string | undefined;
 
   /** Server port that failed to connect. */
-  readonly port?: number;
+  readonly port?: number | undefined;
 
   constructor(
     code: ConnectionErrorCode,
     message: string,
     options?: {
-      cause?: Error;
-      host?: string;
-      port?: number;
-      recoverable?: boolean;
+      cause?: Error | undefined;
+      host?: string | undefined;
+      port?: number | undefined;
+      recoverable?: boolean | undefined;
     },
   ) {
     super(message);
@@ -240,18 +240,18 @@ export class CommandError extends RconError {
   readonly recoverable: boolean;
 
   /** The command that was being executed. */
-  readonly command?: string;
+  readonly command?: string | undefined;
 
   /** Sequence number for request tracking. */
-  readonly sequence?: number;
+  readonly sequence?: number | undefined;
 
   constructor(
     code: CommandErrorCode,
     message: string,
     options?: {
-      command?: string;
-      sequence?: number;
-      recoverable?: boolean;
+      command?: string | undefined;
+      sequence?: number | undefined;
+      recoverable?: boolean | undefined;
     },
   ) {
     super(message);
@@ -329,17 +329,17 @@ export class ParseError extends RconError {
   readonly recoverable: boolean = false;
 
   /** The command that produced the unparseable response. */
-  readonly command?: string;
+  readonly command?: string | undefined;
 
   /** The raw response that failed to parse. */
-  readonly rawResponse?: string;
+  readonly rawResponse?: string | undefined;
 
   constructor(
     code: ParseErrorCode,
     message: string,
     options?: {
-      command?: string;
-      rawResponse?: string;
+      command?: string | undefined;
+      rawResponse?: string | undefined;
     },
   ) {
     super(message);

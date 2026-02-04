@@ -78,7 +78,7 @@ export function* iterateIDs(idsString: string): Generator<IDEntry> {
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(idsString)) !== null) {
-    if (match.groups) {
+    if (match.groups?.platform && match.groups?.id) {
       yield {
         platform: match.groups.platform,
         id: match.groups.id,

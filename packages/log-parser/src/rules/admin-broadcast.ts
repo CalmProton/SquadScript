@@ -29,6 +29,12 @@ export const adminBroadcastRule = defineRule<AdminBroadcastEvent>({
   parse(match, context) {
     const [raw, timestamp, , message, _from] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !message) {
+      context.logger.warn('admin-broadcast', 'Missing required fields in admin broadcast event');
+      return null;
+    }
+
     const time = parseLogTimestamp(timestamp);
     if (!time) {
       context.logger.warn('admin-broadcast', 'Failed to parse timestamp in admin broadcast event');

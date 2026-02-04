@@ -39,6 +39,12 @@ export const playerPossessRule = defineRule<PlayerPossessEvent>({
   parse(match, context) {
     const [raw, timestamp, , playerSuffix, idsString, pawnClass] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !playerSuffix || !idsString || !pawnClass) {
+      context.logger.warn('player-possess', 'Missing required fields in player possess event');
+      return null;
+    }
+
     // Bail on invalid IDs
     if (hasInvalidIDs(idsString)) {
       context.logger.verbose('player-possess', 'Skipping player possess with invalid IDs');
@@ -74,13 +80,13 @@ export const playerPossessRule = defineRule<PlayerPossessEvent>({
       playerID: asPlayerID(0)!, // Will be resolved by SquadServer
       eosID: ids.eosID,
       steamID: storedPlayer?.steamID ?? ids.steamID,
-      name: storedPlayer?.name ?? playerSuffix,
+      name: storedPlayer?.name ?? playerSuffix ?? 'Unknown',
       teamID: null,
       squadID: null,
       isSquadLeader: false,
       role: null,
       controller: controllerValue,
-      suffix: playerSuffix,
+      suffix: playerSuffix ?? null,
     };
 
     return Object.freeze({

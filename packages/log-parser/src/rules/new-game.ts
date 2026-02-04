@@ -29,6 +29,12 @@ export const newGameRule = defineRule<NewGameEvent>({
   parse(match, context) {
     const [raw, timestamp, , _dlc, mapClassname, layerClassname] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !mapClassname || !layerClassname) {
+      context.logger.warn('new-game', 'Missing required fields in new game event');
+      return null;
+    }
+
     // Skip transition maps
     if (layerClassname === 'TransitionMap') {
       return null;

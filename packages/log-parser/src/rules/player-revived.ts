@@ -31,6 +31,12 @@ export const playerRevivedRule = defineRule<PlayerRevivedEvent>({
   parse(match, context) {
     const [raw, timestamp, , reviverName, reviverIdsString, victimName, victimIdsString] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !reviverName || !reviverIdsString || !victimName || !victimIdsString) {
+      context.logger.warn('player-revived', 'Missing required fields in player revived event');
+      return null;
+    }
+
     // Bail on invalid IDs
     if (hasInvalidIDs(reviverIdsString) || hasInvalidIDs(victimIdsString)) {
       context.logger.verbose('player-revived', 'Skipping player revived with invalid IDs');
@@ -60,7 +66,7 @@ export const playerRevivedRule = defineRule<PlayerRevivedEvent>({
       playerID: asPlayerID(0)!,
       eosID: reviverIds.eosID,
       steamID: storedReviver?.steamID ?? reviverIds.steamID,
-      name: storedReviver?.name ?? reviverName,
+      name: storedReviver?.name ?? reviverName ?? 'Unknown',
       teamID: null,
       squadID: null,
       isSquadLeader: false,
@@ -74,7 +80,7 @@ export const playerRevivedRule = defineRule<PlayerRevivedEvent>({
       playerID: asPlayerID(0)!,
       eosID: victimIds.eosID,
       steamID: storedVictim?.steamID ?? victimIds.steamID,
-      name: storedVictim?.name ?? victimName,
+      name: storedVictim?.name ?? victimName ?? 'Unknown',
       teamID: null,
       squadID: null,
       isSquadLeader: false,
@@ -83,8 +89,8 @@ export const playerRevivedRule = defineRule<PlayerRevivedEvent>({
       suffix: null,
     };
 
-    // Clean up victim's session data
-    context.store.deleteSession(victimName);
+    // Clean up victim's session data - use empty string fallback for type safety
+    context.store.deleteSession(victimName ?? '');
 
     return Object.freeze({
       time,

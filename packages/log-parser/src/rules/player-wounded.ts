@@ -31,6 +31,12 @@ export const playerWoundedRule = defineRule<PlayerWoundedEvent>({
   parse(match, context) {
     const [raw, timestamp, chainIDStr, victimName, damageStr, _attackerPlayerController, idsString, attackerController, weapon] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !chainIDStr || !victimName || !damageStr || !idsString || !attackerController || !weapon) {
+      context.logger.warn('player-wounded', 'Missing required fields in player wounded event');
+      return null;
+    }
+
     // Bail on invalid IDs
     if (hasInvalidIDs(idsString)) {
       context.logger.verbose('player-wounded', 'Skipping player wounded with invalid IDs');
@@ -52,11 +58,11 @@ export const playerWoundedRule = defineRule<PlayerWoundedEvent>({
       return null;
     }
 
-    // Get session data from previous damage event
-    const session = context.store.getSession(victimName);
+    // Get session data from previous damage event - use fallback for type safety
+    const session = context.store.getSession(victimName ?? '');
 
-    // Update session with wound data
-    context.store.updateSession(victimName, {
+    // Update session with wound data - use fallback for type safety
+    context.store.updateSession(victimName ?? '', {
       lastWound: {
         time,
         damage,
@@ -87,7 +93,7 @@ export const playerWoundedRule = defineRule<PlayerWoundedEvent>({
       playerID: asPlayerID(0)!,
       eosID: ids.eosID, // Placeholder - will be resolved
       steamID: null,
-      name: victimName,
+      name: victimName ?? 'Unknown',
       teamID: null,
       squadID: null,
       isSquadLeader: false,

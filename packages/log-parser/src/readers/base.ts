@@ -40,7 +40,7 @@ export interface LogReaderBaseOptions {
    * If not specified, readers may use a default (e.g., "SquadGame.log").
    * @default "SquadGame.log"
    */
-  readonly filename?: string;
+  readonly filename?: string | undefined;
 }
 
 /**

@@ -58,7 +58,7 @@ export class LogParserError extends Error {
   readonly code: LogParserErrorCode;
 
   /** Additional context about the error. */
-  readonly context?: Record<string, unknown>;
+  readonly context?: Record<string, unknown> | undefined;
 
   constructor(
     code: LogParserErrorCode,
@@ -121,7 +121,7 @@ export class LogReaderError extends Error {
   readonly code: LogReaderErrorCode;
 
   /** Additional context about the error. */
-  readonly context?: Record<string, unknown>;
+  readonly context?: Record<string, unknown> | undefined;
 
   constructor(
     code: LogReaderErrorCode,

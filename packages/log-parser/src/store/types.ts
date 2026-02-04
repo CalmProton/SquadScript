@@ -25,22 +25,22 @@ import type {
  */
 export interface StoredPlayer {
   /** Player controller identifier. */
-  readonly controller?: PlayerController | string;
+  readonly controller?: PlayerController | string | undefined;
 
   /** Steam ID if known. */
-  readonly steamID?: SteamID;
+  readonly steamID?: SteamID | undefined;
 
   /** EOS ID (primary identifier). */
   readonly eosID: EOSID;
 
   /** Player name if known. */
-  readonly name?: string;
+  readonly name?: string | undefined;
 
   /** Player IP address. */
-  readonly ip?: string;
+  readonly ip?: string | undefined;
 
   /** Name suffix from join event. */
-  readonly suffix?: string;
+  readonly suffix?: string | undefined;
 }
 
 /**
@@ -52,8 +52,8 @@ export interface StoredPlayer {
 export interface JoinRequest {
   /** Partial player info from connection event. */
   readonly player: {
-    readonly controller?: PlayerController | string;
-    readonly steamID?: SteamID;
+    readonly controller?: PlayerController | string | undefined;
+    readonly steamID?: SteamID | undefined;
     readonly eosID: EOSID;
   };
 
@@ -81,19 +81,19 @@ export interface CombatSession {
   readonly lastDamage?: {
     readonly damage: number;
     readonly weapon: string;
-    readonly attackerEOSID?: EOSID;
-    readonly attackerSteamID?: SteamID;
-    readonly attackerController?: string;
-    readonly attackerName?: string;
-  };
+    readonly attackerEOSID?: EOSID | undefined;
+    readonly attackerSteamID?: SteamID | undefined;
+    readonly attackerController?: string | undefined;
+    readonly attackerName?: string | undefined;
+  } | undefined;
 
   /** Last wound info. */
   readonly lastWound?: {
     readonly time: Date;
     readonly damage: number;
     readonly weapon: string;
-    readonly attackerController?: string;
-  };
+    readonly attackerController?: string | undefined;
+  } | undefined;
 }
 
 /**
@@ -106,7 +106,7 @@ export interface RoundResult {
     readonly faction: string;
     readonly subfaction: string;
     readonly tickets: number;
-  };
+  } | undefined;
 
   /** Losing team info. */
   readonly loser?: {
@@ -114,11 +114,11 @@ export interface RoundResult {
     readonly faction: string;
     readonly subfaction: string;
     readonly tickets: number;
-  };
+  } | undefined;
 
   /** Layer being played. */
-  readonly layer?: string;
+  readonly layer?: string | undefined;
 
   /** Level/map name. */
-  readonly level?: string;
+  readonly level?: string | undefined;
 }

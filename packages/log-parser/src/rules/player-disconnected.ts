@@ -30,6 +30,12 @@ export const playerDisconnectedRule = defineRule<PlayerDisconnectedEvent>({
   parse(match, context) {
     const [raw, timestamp, , _ip, _playerController, eosIDStr] = match;
 
+    // Ensure required groups matched
+    if (!timestamp || !eosIDStr) {
+      context.logger.warn('player-disconnected', 'Missing required fields in player disconnected event');
+      return null;
+    }
+
     const time = parseLogTimestamp(timestamp);
     if (!time) {
       context.logger.warn('player-disconnected', 'Failed to parse timestamp in player disconnected event');
