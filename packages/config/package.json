@@ -1,0 +1,45 @@
+{
+  "name": "@squadscript/config",
+  "version": "0.1.0",
+  "description": "Configuration loading and validation for SquadScript",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target bun && bun run build:types",
+    "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist",
+    "check-types": "tsc --noEmit",
+    "dev": "bun --watch src/index.ts",
+    "clean": "rm -rf dist",
+    "test": "bun test"
+  },
+  "keywords": [
+    "squad",
+    "squadjs",
+    "squadscript",
+    "config",
+    "configuration"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@squadscript/logger": "workspace:*",
+    "@squadscript/types": "workspace:*",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.8",
+    "typescript": "^5.9.2"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "@squadscript/types",
+  "version": "0.1.0",
+  "description": "Shared TypeScript types and interfaces for SquadScript",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target bun && bun run build:types",
+    "build:types": "tsc --emitDeclarationOnly --declaration --outDir dist",
+    "check-types": "tsc --noEmit",
+    "dev": "bun --watch src/index.ts",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "squad",
+    "squadjs",
+    "squadscript",
+    "types",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}
