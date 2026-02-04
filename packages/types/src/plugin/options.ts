@@ -77,6 +77,11 @@ export interface OptionSpec<T = unknown> {
 export type OptionsSpecification = Record<string, OptionSpec>;
 
 /**
+ * Shorthand alias for OptionsSpecification.
+ */
+export type OptionsSpec = OptionsSpecification;
+
+/**
  * Extract the resolved options type from an options specification.
  *
  * @example
