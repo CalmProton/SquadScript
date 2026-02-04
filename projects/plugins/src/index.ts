@@ -21,6 +21,10 @@
  *   DiscordChat,
  *   DiscordTeamkill,
  *   DiscordAdminRequest,
+ *   // Advanced plugins
+ *   CBLInfo,
+ *   DBLog,
+ *   SocketIOAPI,
  * } from '@squadscript/plugins';
  *
  * // Register core plugins
@@ -41,6 +45,24 @@
  * server.registerPlugin(DiscordTeamkill, {
  *   channelID: '123456789012345678',
  *   includeCBL: true,
+ * });
+ *
+ * // Register CBL monitoring (requires Discord connector)
+ * server.registerPlugin(CBLInfo, {
+ *   channelID: '123456789012345678',
+ *   threshold: 1,
+ * });
+ *
+ * // Register database logging (requires database connector)
+ * server.registerPlugin(DBLog, {
+ *   database: 'mysql',
+ *   serverID: 1,
+ * });
+ *
+ * // Register real-time API
+ * server.registerPlugin(SocketIOAPI, {
+ *   port: 3000,
+ *   authentication: 'your-secret-token',
  * });
  * ```
  *
@@ -64,25 +86,29 @@ export { TeamRandomizer } from "./team-randomizer.js";
 // =============================================================================
 
 export {
+	DiscordAdminBroadcast,
+	DiscordAdminCamLogs,
+	DiscordAdminRequest,
+	type DiscordBaseOptions,
 	// Base plugin for Discord integrations
 	DiscordBasePlugin,
-	discordBaseOptions,
-	type DiscordBaseOptions,
-
 	// Chat and communication
 	DiscordChat,
-	DiscordAdminBroadcast,
-	DiscordAdminRequest,
-
-	// Moderation
-	DiscordTeamkill,
-	DiscordAdminCamLogs,
-
-	// Game state
-	DiscordServerStatus,
-	DiscordRoundWinner,
-
 	// Logging
 	DiscordKillFeed,
+	DiscordRoundWinner,
+	// Game state
+	DiscordServerStatus,
 	DiscordSquadCreated,
+	// Moderation
+	DiscordTeamkill,
+	discordBaseOptions,
 } from "./discord/index.js";
+
+// =============================================================================
+// Advanced Plugins (Phase 3)
+// =============================================================================
+
+export { CBLInfo } from "./cbl-info.js";
+export { DBLog } from "./db-log.js";
+export { SocketIOAPI } from "./socket-io-api.js";
