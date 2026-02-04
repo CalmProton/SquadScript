@@ -138,8 +138,15 @@ export class DiscordAdminRequest extends DiscordBasePlugin<typeof optionsSpec> {
 				}
 			}
 
-			// Get the request message
-			const requestMessage = event.args.trim() || "(No message provided)";
+			// Require a message - warn the player if empty (matches original behavior)
+			const requestMessage = event.args.trim();
+			if (requestMessage.length === 0) {
+				await this.rcon.warn(
+					event.player.eosID,
+					"Please specify what you would like help with when requesting an admin.",
+				);
+				return;
+			}
 
 			this.log.info(
 				`Admin request from ${event.player.name}: ${requestMessage}`,

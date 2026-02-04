@@ -98,11 +98,6 @@ export class SeedingMode extends BasePlugin<typeof optionsSpec> {
 	private isPaused = false;
 
 	/**
-	 * Track whether we've already announced going live.
-	 */
-	private hasAnnouncedLive = false;
-
-	/**
 	 * Subscribe to events and start broadcast interval.
 	 */
 	async mount(): Promise<void> {
@@ -111,7 +106,6 @@ export class SeedingMode extends BasePlugin<typeof optionsSpec> {
 			this.on("NEW_GAME", () => {
 				this.log.debug("New game started, pausing broadcasts");
 				this.isPaused = true;
-				this.hasAnnouncedLive = false; // Reset live announcement
 
 				this.setTimeout(
 					() => {
@@ -136,6 +130,9 @@ export class SeedingMode extends BasePlugin<typeof optionsSpec> {
 
 	/**
 	 * Check player count and broadcast appropriate message.
+	 * Matches original SquadJS behavior:
+	 * - Broadcasts seeding message when playerCount > 0 AND < seedingThreshold
+	 * - Broadcasts live message when playerCount > 0 AND < liveThreshold (between seeding and live thresholds)
 	 */
 	private async broadcast(): Promise<void> {
 		if (this.isPaused) {
@@ -151,27 +148,30 @@ export class SeedingMode extends BasePlugin<typeof optionsSpec> {
 			liveThreshold,
 		});
 
+		// Skip if no players (avoid broadcasting to empty server)
+		if (playerCount === 0) {
+			return;
+		}
+
 		try {
 			if (playerCount < seedingThreshold) {
 				// Server is in seeding mode
-				this.hasAnnouncedLive = false; // Reset so we can announce again later
-
 				if (this.options.seedingMessage) {
 					await this.rcon.broadcast(this.options.seedingMessage);
 					this.log.verbose("Broadcast seeding message");
 				}
 			} else if (
 				this.options.liveEnabled &&
-				playerCount >= liveThreshold &&
-				!this.hasAnnouncedLive
+				playerCount < liveThreshold
 			) {
-				// Server is now live
+				// Server is in transition zone - broadcast live message
+				// Original broadcasts every interval while in this zone
 				if (this.options.liveMessage) {
 					await this.rcon.broadcast(this.options.liveMessage);
-					this.log.info("Server transitioned to LIVE");
-					this.hasAnnouncedLive = true;
+					this.log.verbose("Broadcast live message");
 				}
 			}
+			// When >= liveThreshold, no broadcast needed (server is fully live)
 		} catch (error) {
 			this.log.error(
 				"Failed to broadcast seeding message",

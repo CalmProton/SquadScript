@@ -88,78 +88,62 @@ export class DiscordTeamkill extends DiscordBasePlugin<typeof optionsSpec> {
 				`Teamkill: ${event.attacker.name} -> ${event.victim.name}`,
 			);
 
-			// Build fields
+			// Build fields - matches original by including Steam ID and EOS ID
 			const fields: { name: string; value: string; inline?: boolean }[] = [
 				{
-					name: "Attacker",
+					name: "Attacker's Name",
 					value: this.escapeMarkdown(event.attacker.name),
 					inline: true,
 				},
 				{
-					name: "Victim",
-					value: this.escapeMarkdown(event.victim.name),
+					name: "Attacker's SteamID",
+					value: event.attacker.steamID
+						? `[${event.attacker.steamID}](https://steamcommunity.com/profiles/${event.attacker.steamID})`
+						: "N/A",
+					inline: true,
+				},
+				{
+					name: "Attacker's EosID",
+					value: event.attacker.eosID,
 					inline: true,
 				},
 				{
 					name: "Weapon",
 					value: event.weapon ?? "Unknown",
+					inline: false,
+				},
+				{
+					name: "Victim's Name",
+					value: this.escapeMarkdown(event.victim.name),
+					inline: true,
+				},
+				{
+					name: "Victim's SteamID",
+					value: event.victim.steamID
+						? `[${event.victim.steamID}](https://steamcommunity.com/profiles/${event.victim.steamID})`
+						: "N/A",
+					inline: true,
+				},
+				{
+					name: "Victim's EosID",
+					value: event.victim.eosID,
 					inline: true,
 				},
 			];
 
-			// Add squad info
-			const attackerSquad = event.attacker.squadID
-				? `Squad ${event.attacker.squadID}`
-				: "Unassigned";
-			const victimSquad = event.victim.squadID
-				? `Squad ${event.victim.squadID}`
-				: "Unassigned";
-
-			fields.push({
-				name: "Attacker Squad",
-				value: attackerSquad,
-				inline: true,
-			});
-
-			fields.push({
-				name: "Victim Squad",
-				value: victimSquad,
-				inline: true,
-			});
-
-			fields.push({
-				name: "Team",
-				value: `Team ${event.attacker.teamID ?? "?"}`,
-				inline: true,
-			});
-
-			// Add CBL links if enabled
-			if (this.options.includeCBL) {
-				const attackerCBL = this.getCBLLink(event.attacker.steamID);
-				const victimCBL = this.getCBLLink(event.victim.steamID);
-
-				if (attackerCBL || victimCBL) {
-					const links: string[] = [];
-					if (attackerCBL) {
-						links.push(`[Attacker CBL](${attackerCBL})`);
-					}
-					if (victimCBL) {
-						links.push(`[Victim CBL](${victimCBL})`);
-					}
-
-					fields.push({
-						name: "Ban List Links",
-						value: links.join(" | "),
-						inline: false,
-					});
-				}
+			// Add CBL links if enabled (matches original disableCBL option, but inverted)
+			if (this.options.includeCBL && event.attacker.steamID) {
+				fields.push({
+					name: "Community Ban List",
+					value: `[Attacker's Bans](https://communitybanlist.com/search/${event.attacker.steamID})`,
+					inline: false,
+				});
 			}
 
-			// Send to Discord
+			// Send to Discord (title matches original format)
 			await this.sendDiscordMessage(this.options.channelID as string, {
 				embed: {
-					title: "⚠️ Teamkill Detected",
-					description: `**${this.escapeMarkdown(event.attacker.name)}** teamkilled **${this.escapeMarkdown(event.victim.name)}**`,
+					title: `Teamkill: ${this.escapeMarkdown(event.attacker.name)}`,
 					color: this.options.color as number,
 					fields,
 					timestamp: new Date().toISOString(),

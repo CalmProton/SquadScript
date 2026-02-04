@@ -114,28 +114,43 @@ export class DiscordChat extends DiscordBasePlugin<typeof optionsSpec> {
 				? `Squad ${event.player.squadID}`
 				: "Unassigned";
 
+			// Build fields array - matches original by including Steam ID and EOS ID
+			const fields: { name: string; value: string; inline?: boolean }[] = [
+				{
+					name: "Player",
+					value: this.escapeMarkdown(event.player.name),
+					inline: true,
+				},
+				{
+					name: "SteamID",
+					value: event.player.steamID
+						? `[${event.player.steamID}](https://steamcommunity.com/profiles/${event.player.steamID})`
+						: "N/A",
+					inline: true,
+				},
+				{
+					name: "EosID",
+					value: event.player.eosID,
+					inline: true,
+				},
+				{
+					name: "Team & Squad",
+					value: `Team: ${event.player.teamID ?? "?"}, Squad: ${squadInfo}`,
+					inline: false,
+				},
+				{
+					name: "Message",
+					value: event.message,
+					inline: false,
+				},
+			];
+
 			// Send to Discord
 			await this.sendDiscordMessage(this.options.channelID as string, {
 				embed: {
-					description: event.message,
+					title: channelDisplay,
 					color,
-					fields: [
-						{
-							name: "Player",
-							value: this.escapeMarkdown(event.player.name),
-							inline: true,
-						},
-						{
-							name: "Channel",
-							value: channelDisplay,
-							inline: true,
-						},
-						{
-							name: "Team/Squad",
-							value: `Team ${event.player.teamID ?? "?"} / ${squadInfo}`,
-							inline: true,
-						},
-					],
+					fields,
 					timestamp: new Date().toISOString(),
 				},
 			});

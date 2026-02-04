@@ -88,6 +88,7 @@ export class TeamRandomizer extends BasePlugin<typeof optionsSpec> {
 
 	/**
 	 * Randomize all players across teams.
+	 * Matches original behavior: shuffles players then alternates team assignments.
 	 */
 	private async randomizeTeams(): Promise<void> {
 		// Get all players as an array
@@ -96,29 +97,24 @@ export class TeamRandomizer extends BasePlugin<typeof optionsSpec> {
 			players.push(player);
 		}
 
-		// Shuffle the players
+		// Shuffle the players using Fisher-Yates
 		this.shuffle(players);
 
-		// Split into two teams
-		const halfPoint = Math.ceil(players.length / 2);
-		const team1Players = players.slice(0, halfPoint);
-		const team2Players = players.slice(halfPoint);
+		this.log.debug(`Randomizing ${players.length} players across teams`);
 
-		this.log.debug(`Assigning ${team1Players.length} players to Team 1`);
-		this.log.debug(`Assigning ${team2Players.length} players to Team 2`);
+		// Alternate team assignments (1, 2, 1, 2, ...)
+		// Original uses string comparison for teamID
+		let targetTeam: 1 | 2 = 1;
 
-		// Move players to their new teams
-		// Note: Players on the wrong team will be switched
-		for (const player of team1Players) {
-			if (player.teamID !== 1) {
+		for (const player of players) {
+			// Switch team if player is not on the target team
+			if (player.teamID !== targetTeam) {
+				// Use AdminForceTeamChange RCON command (equivalent to switchTeam)
 				await this.rcon.execute(`AdminForceTeamChange ${player.eosID}`);
 			}
-		}
 
-		for (const player of team2Players) {
-			if (player.teamID !== 2) {
-				await this.rcon.execute(`AdminForceTeamChange ${player.eosID}`);
-			}
+			// Alternate to next team
+			targetTeam = targetTeam === 1 ? 2 : 1;
 		}
 
 		this.log.info(`Randomized ${players.length} players across teams`);
