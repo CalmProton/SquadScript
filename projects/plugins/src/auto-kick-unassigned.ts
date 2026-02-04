@@ -18,7 +18,7 @@
  * @module
  */
 
-import { BasePlugin } from "@squadscript/core";
+import { BasePlugin } from "@squadscript/server";
 import type {
 	EOSID,
 	OptionsSpec,

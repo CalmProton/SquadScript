@@ -1069,7 +1069,7 @@ Interested in creating your own plugin? SquadScript makes it easy with a type-sa
 Create custom plugins by extending the `BasePlugin` class:
 
 ```typescript
-import { BasePlugin } from '@squadscript/core';
+import { BasePlugin } from '@squadscript/server';
 import type { OptionsSpec, PluginMeta } from '@squadscript/types';
 
 const optionsSpec = {
