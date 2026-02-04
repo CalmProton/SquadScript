@@ -19,7 +19,7 @@ services:
       - RCONPORT=21114
       - beaconport=15000
       # Server Settings
-      - FIXEDMAXPLAYERS=100
+      - FIXEDMAXPLAYERS=88
       # Optional: Uncomment for beta access
       # - BETA=
       # - BETAPASSWORD=
