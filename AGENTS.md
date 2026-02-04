@@ -1,0 +1,1 @@
+This project uses Bun as the runtime, package manager, and test runner. Please use `bun` and `bunx` commands instead of `npm` and `npx`. (`bun tsc --noEmit 2>&1`)
