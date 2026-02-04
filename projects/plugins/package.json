@@ -1,6 +1,6 @@
 {
   "name": "@squadscript/plugins",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Official plugin collection for SquadScript",
   "type": "module",
   "main": "./dist/index.js",

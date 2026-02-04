@@ -1,6 +1,6 @@
 {
   "name": "@squadscript/server",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "SquadServer orchestrator for SquadScript - manages server state, events, and plugin lifecycle",
   "type": "module",
   "main": "./dist/index.js",

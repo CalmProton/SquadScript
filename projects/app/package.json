@@ -2,6 +2,7 @@
   "name": "@squadscript/app",
   "description": "Admin dashboard for SquadScript RCON and server management",
   "type": "module",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "build": "nuxt build",
