@@ -10,5 +10,8 @@
         "**/dist": true,
         "**/.turbo": true
     },
-    "explorerExclude.backup": {}
+    "explorerExclude.backup": {},
+    "chat.tools.terminal.autoApprove": {
+        "git check-ignore": true
+    }
 }
