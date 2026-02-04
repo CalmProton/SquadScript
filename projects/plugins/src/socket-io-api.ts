@@ -7,6 +7,9 @@
  * Allows external tools like web dashboards, bots, and monitoring systems
  * to receive live server events and query server state.
  *
+ * Uses the native Bun engine (@socket.io/bun-engine) with Elysia for
+ * optimal performance in the Bun runtime.
+ *
  * @example
  * ```typescript
  * server.registerPlugin(SocketIOAPI, {
@@ -29,6 +32,7 @@ import type {
 	Player,
 	PluginMeta,
 } from "@squadscript/types";
+import type { Server as SocketIOServer, Socket as SocketIOSocket } from "socket.io";
 
 /**
  * Events that are forwarded to Socket.IO clients.
@@ -162,30 +166,19 @@ const optionsSpec = {
 		description: "Allow clients to execute RCON commands",
 		default: false,
 	},
+	pingInterval: {
+		type: "number",
+		required: false,
+		description: "Ping interval in milliseconds for the engine",
+		default: 25000,
+	},
+	pingTimeout: {
+		type: "number",
+		required: false,
+		description: "Ping timeout in milliseconds for the engine",
+		default: 20000,
+	},
 } as const satisfies OptionsSpec;
-
-/**
- * Type for Socket.IO server (dynamic import).
- */
-type SocketIOServer = {
-	on: (event: string, callback: (socket: SocketIOSocket) => void) => void;
-	emit: (event: string, data: unknown) => void;
-	close: (callback?: () => void) => void;
-};
-
-/**
- * Type for Socket.IO socket (dynamic import).
- */
-type SocketIOSocket = {
-	id: string;
-	handshake: {
-		auth: { token?: string };
-		headers: Record<string, string>;
-	};
-	emit: (event: string, data: unknown) => void;
-	on: (event: string, callback: (...args: unknown[]) => void) => void;
-	disconnect: () => void;
-};
 
 /**
  * Rate limit tracking for a client.
@@ -199,6 +192,7 @@ interface RateLimitEntry {
  * SocketIOAPI Plugin
  *
  * Provides a real-time Socket.IO API for external applications.
+ * Uses the native Bun engine with Elysia for optimal performance.
  */
 export class SocketIOAPI extends BasePlugin<typeof optionsSpec> {
 	static readonly meta: PluginMeta = {
@@ -216,9 +210,11 @@ export class SocketIOAPI extends BasePlugin<typeof optionsSpec> {
 	private io: SocketIOServer | null = null;
 
 	/**
-	 * HTTP server instance.
+	 * Elysia app instance.
+	 * Using 'unknown' as Elysia's generic types are complex and context-dependent.
 	 */
-	private httpServer: { close: (callback?: () => void) => void } | null = null;
+	// biome-ignore lint/suspicious/noExplicitAny: Elysia generic types are complex
+	private app: { stop: () => Promise<unknown> } | null = null;
 
 	/**
 	 * Connected clients.
@@ -251,17 +247,13 @@ export class SocketIOAPI extends BasePlugin<typeof optionsSpec> {
 		await super.unmount();
 
 		if (this.io) {
-			await new Promise<void>((resolve) => {
-				this.io?.close(() => resolve());
-			});
+			await this.io.close();
 			this.io = null;
 		}
 
-		if (this.httpServer) {
-			await new Promise<void>((resolve) => {
-				this.httpServer?.close(() => resolve());
-			});
-			this.httpServer = null;
+		if (this.app) {
+			await this.app.stop();
+			this.app = null;
 		}
 
 		this.clients.clear();
@@ -271,48 +263,69 @@ export class SocketIOAPI extends BasePlugin<typeof optionsSpec> {
 	}
 
 	/**
-	 * Start the Socket.IO server.
+	 * Start the Socket.IO server using Bun engine with Elysia.
 	 */
 	private async startServer(): Promise<void> {
-		// Dynamic import of socket.io to avoid bundling issues
-		// biome-ignore lint/suspicious/noExplicitAny: socket.io types may not be installed
-		const socketIO = (await import("socket.io" as any)) as {
-			Server: new (httpServer: unknown, options?: unknown) => SocketIOServer;
-		};
-		const http = await import("node:http");
-
-		// Create HTTP server
-		const httpServer = http.createServer((req, res) => {
-			// Simple health check endpoint
-			if (req.url === "/health") {
-				res.writeHead(200, { "Content-Type": "application/json" });
-				res.end(JSON.stringify({ status: "ok", clients: this.clients.size }));
-				return;
-			}
-
-			res.writeHead(404);
-			res.end("Not Found");
-		});
+		// Dynamic imports to avoid bundling issues
+		const { Server: SocketIO } = await import("socket.io");
+		const { Server: Engine } = await import("@socket.io/bun-engine");
+		const { Elysia } = await import("elysia");
 
 		// Create Socket.IO server
-		const io = new socketIO.Server(httpServer, {
+		const io = new SocketIO();
+
+		// Build CORS origin configuration
+		const corsOriginValue = this.options.corsOrigin;
+		const corsOrigins: string[] = corsOriginValue && corsOriginValue !== "*"
+			? [corsOriginValue]
+			: [];
+
+		// Create Bun engine with configuration
+		const engine = new Engine({
+			path: "/socket.io/",
+			pingInterval: this.options.pingInterval,
+			pingTimeout: this.options.pingTimeout,
 			cors: this.options.cors
-				? { origin: this.options.corsOrigin, methods: ["GET", "POST"] }
+				? {
+						origin: corsOrigins.length > 0 ? corsOrigins : undefined,
+					}
 				: undefined,
 		});
+
+		// Bind Socket.IO to the Bun engine
+		io.bind(engine);
 
 		// Handle connections
 		io.on("connection", (socket: SocketIOSocket) =>
 			this.handleConnection(socket),
 		);
 
-		// Start listening
-		await new Promise<void>((resolve) => {
-			httpServer.listen(this.options.port, this.options.host, () => resolve());
-		});
+		// Get engine handler config
+		const engineHandler = engine.handler();
 
-		this.httpServer = httpServer;
+		// Create Elysia app with routes
+		const app = new Elysia()
+			// Health check endpoint
+			.get("/health", () => ({
+				status: "ok",
+				clients: this.clients.size,
+			}))
+			// Socket.IO endpoint - handle all methods
+			.all("/socket.io/", ({ request, server }) => {
+				if (!server) {
+					return new Response("Server not available", { status: 500 });
+				}
+				return engine.handleRequest(request, server);
+			})
+			// Start listening with Bun engine handler
+			.listen({
+				port: this.options.port,
+				hostname: this.options.host,
+				...engineHandler,
+			});
+
 		this.io = io;
+		this.app = app;
 	}
 
 	/**
