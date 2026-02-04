@@ -4,11 +4,12 @@
  * Official plugin collection for SquadScript.
  *
  * This package provides a set of ready-to-use plugins for common
- * server administration tasks.
+ * server administration tasks, including Discord integrations.
  *
  * @example
  * ```typescript
  * import {
+ *   // Core plugins
  *   ChatCommands,
  *   AutoTKWarn,
  *   SeedingMode,
@@ -16,9 +17,13 @@
  *   AutoKickUnassigned,
  *   FogOfWar,
  *   TeamRandomizer,
+ *   // Discord plugins
+ *   DiscordChat,
+ *   DiscordTeamkill,
+ *   DiscordAdminRequest,
  * } from '@squadscript/plugins';
  *
- * // Register plugins with your server
+ * // Register core plugins
  * server.registerPlugin(ChatCommands, {
  *   commands: [
  *     { command: 'rules', type: 'warn', response: 'Be respectful!' },
@@ -27,6 +32,16 @@
  *
  * server.registerPlugin(AutoTKWarn);
  * server.registerPlugin(SeedingMode, { seedingThreshold: 50 });
+ *
+ * // Register Discord plugins (requires Discord connector)
+ * server.registerPlugin(DiscordChat, {
+ *   channelID: '123456789012345678',
+ * });
+ *
+ * server.registerPlugin(DiscordTeamkill, {
+ *   channelID: '123456789012345678',
+ *   includeCBL: true,
+ * });
  * ```
  *
  * @packageDocumentation
@@ -43,3 +58,31 @@ export { FogOfWar } from "./fog-of-war.js";
 export { IntervalledBroadcasts } from "./intervalled-broadcasts.js";
 export { SeedingMode } from "./seeding-mode.js";
 export { TeamRandomizer } from "./team-randomizer.js";
+
+// =============================================================================
+// Discord Plugins
+// =============================================================================
+
+export {
+	// Base plugin for Discord integrations
+	DiscordBasePlugin,
+	discordBaseOptions,
+	type DiscordBaseOptions,
+
+	// Chat and communication
+	DiscordChat,
+	DiscordAdminBroadcast,
+	DiscordAdminRequest,
+
+	// Moderation
+	DiscordTeamkill,
+	DiscordAdminCamLogs,
+
+	// Game state
+	DiscordServerStatus,
+	DiscordRoundWinner,
+
+	// Logging
+	DiscordKillFeed,
+	DiscordSquadCreated,
+} from "./discord/index.js";
