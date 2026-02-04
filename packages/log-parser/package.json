@@ -1,0 +1,46 @@
+{
+  "name": "@squadscript/log-parser",
+  "version": "0.1.0",
+  "description": "High-performance log parser for Squad dedicated servers",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target bun",
+    "check-types": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "test": "bun test",
+    "lint": "echo 'No linter configured'"
+  },
+  "dependencies": {
+    "@squadscript/types": "workspace:*",
+    "@squadscript/logger": "workspace:*",
+    "basic-ftp": "^5.0.5",
+    "ssh2-sftp-client": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.8",
+    "@types/ssh2-sftp-client": "^9.0.4",
+    "typescript": "^5.9.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "squad",
+    "log-parser",
+    "game-server",
+    "typescript",
+    "bun"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CalmProton/SquadScript.git",
+    "directory": "packages/log-parser"
+  }
+}
