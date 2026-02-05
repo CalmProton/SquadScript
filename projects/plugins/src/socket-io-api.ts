@@ -17,9 +17,6 @@
  *   authentication: 'your-secret-token',
  * });
  *
- * // Client-side:
- * // const socket = io('http://localhost:3000', { auth: { token: 'your-secret-token' } });
- * // socket.on('PLAYER_CONNECTED', (data) => console.log('Player connected:', data));
  * ```
  *
  * @module
