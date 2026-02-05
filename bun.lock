@@ -78,6 +78,7 @@
     },
     "projects/app": {
       "name": "@squadscript/app",
+      "version": "0.0.1",
       "dependencies": {
         "@tailwindcss/vite": "^4.1.18",
         "class-variance-authority": "^0.7.1",
@@ -97,7 +98,7 @@
     },
     "projects/plugins": {
       "name": "@squadscript/plugins",
-      "version": "0.1.0",
+      "version": "0.0.1",
       "dependencies": {
         "@socket.io/bun-engine": "^0.1.0",
         "@squadscript/server": "workspace:*",
@@ -112,7 +113,7 @@
     },
     "projects/server": {
       "name": "@squadscript/server",
-      "version": "0.1.0",
+      "version": "0.0.1",
       "dependencies": {
         "@squadscript/config": "workspace:*",
         "@squadscript/log-parser": "workspace:*",
