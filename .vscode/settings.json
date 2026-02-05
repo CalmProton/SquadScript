@@ -15,6 +15,7 @@
         "git check-ignore": true
     },
     "json.schemaDownload.trustedDomains": {
-        "https://shadcn-vue.com/schema.json": true
+        "https://shadcn-vue.com/schema.json": true,
+        "https://turborepo.dev/schema.json": true
     }
 }
