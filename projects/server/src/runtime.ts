@@ -86,6 +86,7 @@ async function main(): Promise<void> {
 
   const configPath = process.env.SQUADSCRIPT_CONFIG ?? DEFAULT_CONFIG_PATH;
   const retryMs = Number(process.env.SQUADSCRIPT_RETRY_MS ?? DEFAULT_RETRY_MS);
+  const rconHostOverride = process.env.SQUADSCRIPT_RCON_HOST;
   const healthPort = Number(
     process.env.SQUADSCRIPT_HEALTH_PORT ?? DEFAULT_HEALTH_PORT,
   );
@@ -137,7 +138,16 @@ async function main(): Promise<void> {
     }
 
     const serverConfig = resolveFirstServer(loadedConfig.value);
-    serverOptions = mapConfigToOptions(serverConfig);
+    const mappedOptions = mapConfigToOptions(serverConfig);
+    serverOptions = rconHostOverride
+      ? {
+          ...mappedOptions,
+          rcon: {
+            ...mappedOptions.rcon,
+            host: rconHostOverride,
+          },
+        }
+      : mappedOptions;
     configLoaded = true;
   }
 
@@ -158,6 +168,8 @@ async function main(): Promise<void> {
     log.error(
       `Failed to start SquadScript server, retrying in ${retryMs}ms: ${startResult.error.message}`,
     );
+
+    await instance.stop();
 
     await sleep(retryMs);
   }

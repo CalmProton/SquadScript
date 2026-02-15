@@ -4,7 +4,7 @@
       "id": 1,
       "name": "My Squad Server",
       "rcon": {
-        "host": "squad",
+        "host": "127.0.0.1",
         "port": 21114,
         "password": "CHANGE_ME"
       },
