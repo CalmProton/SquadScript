@@ -47,11 +47,11 @@ services:
     environment:
       - SQUADSCRIPT_CONFIG=/app/config.json
       - LOG_LEVEL=${LOG_LEVEL:-info}
-      - SQUADSCRIPT_HEALTH_PORT=${SQUADSCRIPT_HEALTH_PORT:-8080}
+      - SQUADSCRIPT_HEALTH_PORT=${SQUADSCRIPT_HEALTH_PORT:-3002}
       - SQUADSCRIPT_RETRY_MS=${SQUADSCRIPT_RETRY_MS:-5000}
       - SQUADSCRIPT_RCON_HOST=${SQUADSCRIPT_RCON_HOST:-127.0.0.1}
     healthcheck:
-      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:' + (process.env.SQUADSCRIPT_HEALTH_PORT || '8080') + '/health').then((res)=>process.exit(res.ok?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD", "bun", "-e", "const start = Number(process.env.SQUADSCRIPT_HEALTH_PORT || '3002'); const check = async () => { for (let offset = 0; offset < 10; offset += 1) { const port = start + offset; try { const res = await fetch('http://127.0.0.1:' + port + '/health'); if (res.ok) { process.exit(0); } } catch {} } process.exit(1); }; check();"]
       interval: 15s
       timeout: 5s
       retries: 8

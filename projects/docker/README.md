@@ -61,7 +61,7 @@ Copy `.env.example` to `.env` and adjust values.
 | Variable              | Default   | Description                                          |
 | --------------------- | --------- | ---------------------------------------------------- |
 | `LOG_LEVEL`           | `info`    | Log level (`debug`, `info`, `warn`, `error`)         |
-| `SQUADSCRIPT_HEALTH_PORT` | `8080` | Internal HTTP health endpoint port                    |
+| `SQUADSCRIPT_HEALTH_PORT` | `3002` | Internal HTTP health endpoint start port (auto-falls back to next ports if busy) |
 | `SQUADSCRIPT_RETRY_MS`    | `5000` | Retry delay (ms) when startup dependencies are not ready |
 
 ### SquadScript Config (`config.json`)

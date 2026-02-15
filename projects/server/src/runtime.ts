@@ -14,7 +14,8 @@ import type { SquadServerOptions } from './types.js';
 
 const DEFAULT_CONFIG_PATH = '/app/config.json';
 const DEFAULT_RETRY_MS = 5000;
-const DEFAULT_HEALTH_PORT = 8080;
+const DEFAULT_HEALTH_PORT = 3002;
+const MAX_HEALTH_PORT_TRIES = 10;
 
 function mapConfigToOptions(config: ServerConfig): SquadServerOptions {
   const mappedLogReader: SquadServerOptions['logReader'] =
@@ -95,32 +96,59 @@ async function main(): Promise<void> {
   let configLoaded = false;
   let ready = false;
 
-  Bun.serve({
-    port: healthPort,
-    hostname: '0.0.0.0',
-    fetch(request) {
-      const requestUrl =
-        (request as { url?: string }).url ?? 'http://127.0.0.1/';
-      const { pathname } = new URL(requestUrl);
+  let selectedHealthPort: number | null = null;
 
-      if (pathname === '/health') {
-        return new Response(JSON.stringify({
-          ok: true,
-          configLoaded,
-          ready,
-          service: 'squadscript-server',
-        }), {
-          status: 200,
-          headers: { 'content-type': 'application/json' },
-        });
+  for (let offset = 0; offset < MAX_HEALTH_PORT_TRIES; offset += 1) {
+    const candidatePort = healthPort + offset;
+
+    try {
+      Bun.serve({
+        port: candidatePort,
+        hostname: '0.0.0.0',
+        fetch(request) {
+          const requestUrl =
+            (request as { url?: string }).url ?? 'http://127.0.0.1/';
+          const { pathname } = new URL(requestUrl);
+
+          if (pathname === '/health') {
+            return new Response(JSON.stringify({
+              ok: true,
+              configLoaded,
+              ready,
+              service: 'squadscript-server',
+              healthPort: candidatePort,
+            }), {
+              status: 200,
+              headers: { 'content-type': 'application/json' },
+            });
+          }
+
+          return new Response('Not Found', { status: 404 });
+        },
+      });
+
+      selectedHealthPort = candidatePort;
+      break;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const isAddrInUse = message.includes('EADDRINUSE') || message.includes('in use');
+
+      if (isAddrInUse) {
+        continue;
       }
 
-      return new Response('Not Found', { status: 404 });
-    },
-  });
+      throw error;
+    }
+  }
+
+  if (selectedHealthPort === null) {
+    throw new Error(
+      `Failed to bind health endpoint: ports ${healthPort}-${healthPort + MAX_HEALTH_PORT_TRIES - 1} are unavailable`,
+    );
+  }
 
   log.info('Health endpoint ready', {
-    url: `http://0.0.0.0:${healthPort}/health`,
+    url: `http://0.0.0.0:${selectedHealthPort}/health`,
   });
 
   const configLoader = new ConfigLoader({ logger });
