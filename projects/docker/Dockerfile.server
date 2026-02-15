@@ -61,6 +61,7 @@ COPY --from=build /app/packages/log-parser   packages/log-parser/
 COPY --from=build /app/projects/server       projects/server/
 COPY --from=build /app/projects/plugins      projects/plugins/
 COPY --from=build /app/package.json          package.json
+COPY projects/docker/config.example.json     config.json
 
 # Default config path (mount your own at runtime)
 ENV SQUADSCRIPT_CONFIG=/app/config.json

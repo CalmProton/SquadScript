@@ -3,7 +3,11 @@ import {
   type RootConfig,
   type ServerConfig,
 } from '@squadscript/config';
-import { Logger, LogLevel, parseLogLevel } from '@squadscript/logger';
+import {
+  Logger,
+  LogLevel,
+  parseLogLevel,
+} from '@squadscript/logger';
 
 import { SquadServer } from './server.js';
 import type { SquadServerOptions } from './types.js';
@@ -13,20 +17,34 @@ const DEFAULT_RETRY_MS = 5000;
 const DEFAULT_HEALTH_PORT = 8080;
 
 function mapConfigToOptions(config: ServerConfig): SquadServerOptions {
-  const mappedLogReader: SquadServerOptions['logReader'] = {
-    mode: config.logReader.mode,
-    logDir: config.logReader.logDir,
-    ...(config.logReader.filename !== undefined && {
-      filename: config.logReader.filename,
-    }),
-  };
-
-  if (config.logReader.mode === 'ftp' || config.logReader.mode === 'sftp') {
-    mappedLogReader.host = config.logReader.ftp?.host;
-    mappedLogReader.port = config.logReader.ftp?.port;
-    mappedLogReader.user = config.logReader.ftp?.username;
-    mappedLogReader.password = config.logReader.ftp?.password;
-  }
+  const mappedLogReader: SquadServerOptions['logReader'] =
+    config.logReader.mode === 'ftp' || config.logReader.mode === 'sftp'
+      ? {
+          mode: config.logReader.mode,
+          logDir: config.logReader.logDir,
+          ...(config.logReader.filename !== undefined && {
+            filename: config.logReader.filename,
+          }),
+          ...(config.logReader.ftp?.host !== undefined && {
+            host: config.logReader.ftp.host,
+          }),
+          ...(config.logReader.ftp?.port !== undefined && {
+            port: config.logReader.ftp.port,
+          }),
+          ...(config.logReader.ftp?.username !== undefined && {
+            user: config.logReader.ftp.username,
+          }),
+          ...(config.logReader.ftp?.password !== undefined && {
+            password: config.logReader.ftp.password,
+          }),
+        }
+      : {
+          mode: config.logReader.mode,
+          logDir: config.logReader.logDir,
+          ...(config.logReader.filename !== undefined && {
+            filename: config.logReader.filename,
+          }),
+        };
 
   return {
     id: String(config.id),
@@ -38,7 +56,7 @@ function mapConfigToOptions(config: ServerConfig): SquadServerOptions {
     },
     logReader: mappedLogReader,
     ...(config.adminLists !== undefined && {
-      adminLists: config.adminLists.map((entry) => ({
+      adminLists: config.adminLists.map((entry: { type: string; source: string }) => ({
         type: entry.type === 'local' ? 'local' : 'remote',
         source: entry.source,
       })),
@@ -51,7 +69,7 @@ function resolveFirstServer(config: RootConfig | ServerConfig): ServerConfig {
     if (config.servers.length === 0) {
       throw new Error('Config must include at least one server entry');
     }
-    return config.servers[0];
+    return config.servers[0]!;
   }
 
   return config;
@@ -72,35 +90,26 @@ async function main(): Promise<void> {
     process.env.SQUADSCRIPT_HEALTH_PORT ?? DEFAULT_HEALTH_PORT,
   );
 
-  const configLoader = new ConfigLoader({ logger });
-
-  const loadedConfig = await configLoader.loadConfig(configPath);
-  if (!loadedConfig.ok) {
-    log.error('Failed to load configuration', {
-      path: configPath,
-      error: loadedConfig.error.formatDetails(),
-    });
-    process.exit(1);
-  }
-
-  const serverConfig = resolveFirstServer(loadedConfig.value);
-  const serverOptions = mapConfigToOptions(serverConfig);
-
   let server: SquadServer | null = null;
+  let configLoaded = false;
   let ready = false;
 
   Bun.serve({
     port: healthPort,
     hostname: '0.0.0.0',
     fetch(request) {
-      const { pathname } = new URL(request.url);
+      const requestUrl =
+        (request as { url?: string }).url ?? 'http://127.0.0.1/';
+      const { pathname } = new URL(requestUrl);
 
       if (pathname === '/health') {
         return new Response(JSON.stringify({
-          ok: ready,
+          ok: true,
+          configLoaded,
+          ready,
           service: 'squadscript-server',
         }), {
-          status: ready ? 200 : 503,
+          status: 200,
           headers: { 'content-type': 'application/json' },
         });
       }
@@ -112,6 +121,25 @@ async function main(): Promise<void> {
   log.info('Health endpoint ready', {
     url: `http://0.0.0.0:${healthPort}/health`,
   });
+
+  const configLoader = new ConfigLoader({ logger });
+  let serverOptions: SquadServerOptions | null = null;
+
+  while (serverOptions === null) {
+    const loadedConfig = await configLoader.loadConfig(configPath);
+
+    if (!loadedConfig.ok) {
+      log.error(
+        `Failed to load configuration at ${configPath}, retrying in ${retryMs}ms: ${loadedConfig.error.formatDetails()}`,
+      );
+      await sleep(retryMs);
+      continue;
+    }
+
+    const serverConfig = resolveFirstServer(loadedConfig.value);
+    serverOptions = mapConfigToOptions(serverConfig);
+    configLoaded = true;
+  }
 
   while (!ready) {
     const instance = new SquadServer(serverOptions, logger);
@@ -127,10 +155,9 @@ async function main(): Promise<void> {
       break;
     }
 
-    log.error('Failed to start SquadScript server, retrying', {
-      retryMs,
-      error: startResult.error.message,
-    });
+    log.error(
+      `Failed to start SquadScript server, retrying in ${retryMs}ms: ${startResult.error.message}`,
+    );
 
     await sleep(retryMs);
   }
@@ -141,9 +168,7 @@ async function main(): Promise<void> {
     if (server !== null) {
       const stopResult = await server.stop();
       if (!stopResult.ok) {
-        log.error('Failed to stop server cleanly', {
-          error: stopResult.error.message,
-        });
+        log.error(`Failed to stop server cleanly: ${stopResult.error.message}`);
       }
     }
 

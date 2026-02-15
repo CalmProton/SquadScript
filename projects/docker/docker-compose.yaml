@@ -43,7 +43,6 @@ services:
         condition: service_started
     volumes:
       - squad-data:/home/steam/squad-dedicated/:ro
-      - ./config.json:/app/config.json:ro
     environment:
       - SQUADSCRIPT_CONFIG=/app/config.json
       - LOG_LEVEL=${LOG_LEVEL:-info}
