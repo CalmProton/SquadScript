@@ -15,8 +15,15 @@ WORKDIR /app
 # Copy workspace root manifests first (better layer caching)
 COPY package.json bun.lock turbo.json ./
 
-# Copy the app package manifest
-COPY projects/app/package.json projects/app/
+# Copy ALL workspace package manifests so bun can resolve the full workspace graph
+COPY packages/types/package.json        packages/types/
+COPY packages/logger/package.json       packages/logger/
+COPY packages/config/package.json       packages/config/
+COPY packages/rcon/package.json         packages/rcon/
+COPY packages/log-parser/package.json   packages/log-parser/
+COPY projects/server/package.json       projects/server/
+COPY projects/plugins/package.json      projects/plugins/
+COPY projects/app/package.json          projects/app/
 
 RUN bun install --frozen-lockfile
 
