@@ -1,0 +1,11 @@
+node_modules
+dist
+.output
+.nuxt
+.turbo
+.git
+*.md
+*.test.ts
+tests
+tmp
+LICENSE

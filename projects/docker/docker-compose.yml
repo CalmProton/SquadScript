@@ -1,0 +1,65 @@
+services:
+  # ---------------------------------------------------------------------------
+  # Squad Dedicated Game Server
+  # https://hub.docker.com/r/cm2network/squad
+  # ---------------------------------------------------------------------------
+  squad:
+    image: cm2network/squad
+    container_name: squadscript-squad
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - squad-data:/home/steam/squad-dedicated/
+    environment:
+      - PORT=${SQUAD_PORT:-7787}
+      - QUERYPORT=${SQUAD_QUERYPORT:-27165}
+      - BEACONPORT=${SQUAD_BEACONPORT:-15000}
+      - RCONPORT=${SQUAD_RCONPORT:-21114}
+      - FIXEDMAXPLAYERS=${SQUAD_MAXPLAYERS:-80}
+      - FIXEDMAXTICKRATE=${SQUAD_MAXTICKRATE:-50}
+      - RANDOM=NONE
+      - MODS=${SQUAD_MODS:-()}
+      - SERVER_NAME=${SQUAD_SERVER_NAME:-Squad Dedicated Server}
+      - MULTIHOME=${SQUAD_MULTIHOME:-}
+
+  # ---------------------------------------------------------------------------
+  # SquadScript Server
+  # Core orchestrator: RCON client, log parser, plugin system
+  # ---------------------------------------------------------------------------
+  squadscript-server:
+    build:
+      context: ../../
+      dockerfile: projects/docker/Dockerfile.server
+    container_name: squadscript-server
+    restart: unless-stopped
+    depends_on:
+      - squad
+    volumes:
+      - squad-data:/home/steam/squad-dedicated/:ro
+      - ./config.json:/app/config.json:ro
+    environment:
+      - SQUADSCRIPT_CONFIG=/app/config.json
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+
+  # ---------------------------------------------------------------------------
+  # SquadScript App
+  # Nuxt admin dashboard for server management
+  # ---------------------------------------------------------------------------
+  squadscript-app:
+    build:
+      context: ../../
+      dockerfile: projects/docker/Dockerfile.app
+    container_name: squadscript-app
+    restart: unless-stopped
+    depends_on:
+      - squadscript-server
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      - NUXT_ADMIN_USERNAME=${APP_ADMIN_USERNAME:-admin}
+      - NUXT_ADMIN_PASSWORD=${APP_ADMIN_PASSWORD:-admin}
+      - NUXT_SESSION_SECRET=${APP_SESSION_SECRET:-change-me-to-a-random-secret}
+
+volumes:
+  squad-data:
+    driver: local

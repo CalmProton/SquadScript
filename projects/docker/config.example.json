@@ -1,0 +1,18 @@
+{
+  "servers": [
+    {
+      "id": 1,
+      "name": "My Squad Server",
+      "rcon": {
+        "host": "squad",
+        "port": 21114,
+        "password": "CHANGE_ME"
+      },
+      "logReader": {
+        "mode": "tail",
+        "logDir": "/home/steam/squad-dedicated/SquadGame/Saved/Logs"
+      },
+      "plugins": []
+    }
+  ]
+}
