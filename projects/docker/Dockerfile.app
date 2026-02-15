@@ -25,7 +25,7 @@ COPY projects/server/package.json       projects/server/
 COPY projects/plugins/package.json      projects/plugins/
 COPY projects/app/package.json          projects/app/
 
-RUN bun install --frozen-lockfile
+RUN bun install --frozen-lockfile --ignore-scripts
 
 # Copy app source
 COPY projects/app/ projects/app/
