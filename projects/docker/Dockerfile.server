@@ -33,7 +33,13 @@ COPY projects/server/ projects/server/
 COPY projects/plugins/ projects/plugins/
 COPY biome.json tsconfig*.json ./
 
-# Build step intentionally skipped: runtime executes TypeScript sources with Bun.
+RUN bun build ./packages/types/src/index.ts --outdir ./packages/types/dist --target bun
+RUN bun build ./packages/logger/src/index.ts --outdir ./packages/logger/dist --target bun
+RUN bun build ./packages/config/src/index.ts --outdir ./packages/config/dist --target bun
+RUN bun build ./packages/rcon/src/index.ts --outdir ./packages/rcon/dist --target bun --external cpu-features
+RUN bun build ./packages/log-parser/src/index.ts --outdir ./packages/log-parser/dist --target bun --external cpu-features
+RUN bun build ./projects/server/src/index.ts --outdir ./projects/server/dist --target bun --external cpu-features
+RUN bun build ./projects/plugins/src/index.ts --outdir ./projects/plugins/dist --target bun --external cpu-features
 
 # ---------------------------------------------------------------------------
 # Stage 2 — Production image
@@ -58,4 +64,4 @@ COPY --from=build /app/package.json          package.json
 # Default config path (mount your own at runtime)
 ENV SQUADSCRIPT_CONFIG=/app/config.json
 
-CMD ["bun", "run", "projects/server/src/index.ts"]
+CMD ["bun", "run", "projects/server/dist/index.js"]
