@@ -21,6 +21,12 @@ services:
       - MODS=${SQUAD_MODS:-()}
       - SERVER_NAME=${SQUAD_SERVER_NAME:-Squad Dedicated Server}
       - MULTIHOME=${SQUAD_MULTIHOME:-}
+    healthcheck:
+      test: ["CMD", "sh", "-c", "test -d /home/steam/squad-dedicated/SquadGame"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   # ---------------------------------------------------------------------------
   # SquadScript Server
@@ -33,13 +39,22 @@ services:
     container_name: squadscript-server
     restart: unless-stopped
     depends_on:
-      - squad
+      squad:
+        condition: service_started
     volumes:
       - squad-data:/home/steam/squad-dedicated/:ro
       - ./config.json:/app/config.json:ro
     environment:
       - SQUADSCRIPT_CONFIG=/app/config.json
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - SQUADSCRIPT_HEALTH_PORT=${SQUADSCRIPT_HEALTH_PORT:-8080}
+      - SQUADSCRIPT_RETRY_MS=${SQUADSCRIPT_RETRY_MS:-5000}
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:' + (process.env.SQUADSCRIPT_HEALTH_PORT || '8080') + '/health').then((res)=>process.exit(res.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 30s
 
   # ---------------------------------------------------------------------------
   # SquadScript App
@@ -52,13 +67,20 @@ services:
     container_name: squadscript-app
     restart: unless-stopped
     depends_on:
-      - squadscript-server
+      squadscript-server:
+        condition: service_healthy
     ports:
       - "${APP_PORT:-3000}:3000"
     environment:
       - NUXT_ADMIN_USERNAME=${APP_ADMIN_USERNAME:-admin}
       - NUXT_ADMIN_PASSWORD=${APP_ADMIN_PASSWORD:-admin}
-      - NUXT_SESSION_SECRET=${APP_SESSION_SECRET:-change-me-to-a-random-secret}
+      - NUXT_SESSION_PASSWORD=${APP_SESSION_PASSWORD:-change-me-to-a-random-secret-min-32-chars}
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:3000/').then((res)=>process.exit(res.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
 
 volumes:
   squad-data:

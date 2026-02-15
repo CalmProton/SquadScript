@@ -54,13 +54,15 @@ Copy `.env.example` to `.env` and adjust values.
 | `APP_PORT`            | `3000`                            | Dashboard HTTP port              |
 | `APP_ADMIN_USERNAME`  | `admin`                           | Dashboard login username         |
 | `APP_ADMIN_PASSWORD`  | `admin`                           | Dashboard login password         |
-| `APP_SESSION_SECRET`  | `change-me-to-a-random-secret`    | Session signing secret           |
+| `APP_SESSION_PASSWORD`| `change-me-to-a-random-secret-min-32-chars` | Session password for `nuxt-auth-utils` (min 32 chars) |
 
 #### SquadScript Server
 
 | Variable              | Default   | Description                                          |
 | --------------------- | --------- | ---------------------------------------------------- |
 | `LOG_LEVEL`           | `info`    | Log level (`debug`, `info`, `warn`, `error`)         |
+| `SQUADSCRIPT_HEALTH_PORT` | `8080` | Internal HTTP health endpoint port                    |
+| `SQUADSCRIPT_RETRY_MS`    | `5000` | Retry delay (ms) when startup dependencies are not ready |
 
 ### SquadScript Config (`config.json`)
 
