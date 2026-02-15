@@ -61,6 +61,10 @@ Copy `.env.example` to `.env` and adjust values.
 | Variable              | Default   | Description                                          |
 | --------------------- | --------- | ---------------------------------------------------- |
 | `LOG_LEVEL`           | `info`    | Log level (`debug`, `info`, `warn`, `error`)         |
+| `SQUADSCRIPT_RCON_HOST` | `127.0.0.1` | RCON host for SquadScript connection                |
+| `SQUADSCRIPT_RCON_PORT` | `21114` | RCON port for SquadScript connection                   |
+| `SQUADSCRIPT_RCON_PASSWORD` | `CHANGE_ME` | RCON password for SquadScript connection (must match Squad `Server.cfg`) |
+| `SQUADSCRIPT_LOG_DIR` | `/home/steam/squad-dedicated/SquadGame/Saved/Logs` | Squad log directory path |
 | `SQUADSCRIPT_HEALTH_PORT` | `3002` | Internal HTTP health endpoint start port (auto-falls back to next ports if busy) |
 | `SQUADSCRIPT_RETRY_MS`    | `5000` | Retry delay (ms) when startup dependencies are not ready |
 

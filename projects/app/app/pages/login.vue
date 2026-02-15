@@ -33,7 +33,7 @@ async function handleLogin() {
       },
     });
     await fetchSession();
-    router.push('/');
+    await navigateTo('/', { replace: true });
   } catch (e: unknown) {
     error.value = $t('auth.invalidCredentials');
   } finally {

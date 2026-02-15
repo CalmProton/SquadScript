@@ -8,6 +8,7 @@ import {
   LogLevel,
   parseLogLevel,
 } from '@squadscript/logger';
+import { Socket } from 'node:net';
 
 import { SquadServer } from './server.js';
 import type { SquadServerOptions } from './types.js';
@@ -16,6 +17,29 @@ const DEFAULT_CONFIG_PATH = '/app/config.json';
 const DEFAULT_RETRY_MS = 5000;
 const DEFAULT_HEALTH_PORT = 3002;
 const MAX_HEALTH_PORT_TRIES = 10;
+
+function isPortOpen(host: string, port: number, timeoutMs = 1500): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = new Socket();
+    let settled = false;
+
+    const finalize = (open: boolean) => {
+      if (!settled) {
+        settled = true;
+        socket.destroy();
+        resolve(open);
+      }
+    };
+
+    socket.setTimeout(timeoutMs);
+    socket.once('connect', () => finalize(true));
+    socket.once('timeout', () => finalize(false));
+    socket.once('error', () => finalize(false));
+    socket.once('close', () => finalize(false));
+
+    socket.connect(port, host);
+  });
+}
 
 function mapConfigToOptions(config: ServerConfig): SquadServerOptions {
   const mappedLogReader: SquadServerOptions['logReader'] =
@@ -88,6 +112,9 @@ async function main(): Promise<void> {
   const configPath = process.env.SQUADSCRIPT_CONFIG ?? DEFAULT_CONFIG_PATH;
   const retryMs = Number(process.env.SQUADSCRIPT_RETRY_MS ?? DEFAULT_RETRY_MS);
   const rconHostOverride = process.env.SQUADSCRIPT_RCON_HOST;
+  const rconPortOverride = process.env.SQUADSCRIPT_RCON_PORT;
+  const rconPasswordOverride = process.env.SQUADSCRIPT_RCON_PASSWORD;
+  const logDirOverride = process.env.SQUADSCRIPT_LOG_DIR;
   const healthPort = Number(
     process.env.SQUADSCRIPT_HEALTH_PORT ?? DEFAULT_HEALTH_PORT,
   );
@@ -167,16 +194,29 @@ async function main(): Promise<void> {
 
     const serverConfig = resolveFirstServer(loadedConfig.value);
     const mappedOptions = mapConfigToOptions(serverConfig);
-    serverOptions = rconHostOverride
-      ? {
-          ...mappedOptions,
-          rcon: {
-            ...mappedOptions.rcon,
-            host: rconHostOverride,
-          },
-        }
-      : mappedOptions;
+    serverOptions = {
+      ...mappedOptions,
+      rcon: {
+        ...mappedOptions.rcon,
+        ...(rconHostOverride !== undefined && { host: rconHostOverride }),
+        ...(rconPortOverride !== undefined && { port: Number(rconPortOverride) }),
+        ...(rconPasswordOverride !== undefined && { password: rconPasswordOverride }),
+      },
+      ...(logDirOverride !== undefined && {
+        logReader: {
+          ...mappedOptions.logReader,
+          logDir: logDirOverride,
+        },
+      }),
+    };
     configLoaded = true;
+  }
+
+  while (!(await isPortOpen(serverOptions.rcon.host, serverOptions.rcon.port))) {
+    log.info(
+      `Waiting for RCON endpoint ${serverOptions.rcon.host}:${serverOptions.rcon.port}...`,
+    );
+    await sleep(retryMs);
   }
 
   while (!ready) {
