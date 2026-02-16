@@ -8,7 +8,9 @@
         "**/node_modules": true,
         "**/bun.lock": true,
         "**/dist": true,
-        "**/.turbo": true
+        "**/.turbo": true,
+        "**/.nuxt": true,
+        "projects\\app/.output": true
     },
     "explorerExclude.backup": {},
     "chat.tools.terminal.autoApprove": {
