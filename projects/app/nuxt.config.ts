@@ -11,6 +11,10 @@ export default defineNuxtConfig({
   // Disable SSR - this is a dashboard app with CSR only
   ssr: false,
 
+  nitro: {
+    preset: 'bun',
+  },
+
   devtools: { enabled: true },
 
   app: {
