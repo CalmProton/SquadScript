@@ -41,6 +41,7 @@ Copy `.env.example` to `.env` and adjust values.
 | `SQUAD_QUERYPORT`     | `27165`                   | Steam query port                                      |
 | `SQUAD_BEACONPORT`    | `15000`                   | Beacon port                                           |
 | `SQUAD_RCONPORT`      | `21114`                   | RCON port (must match `config.json` → `rcon.port`)    |
+| `SQUAD_RCON_PASSWORD` | `squadscript-rcon`        | RCON password passed to Squad server and reused by SquadScript |
 | `SQUAD_MAXPLAYERS`    | `80`                      | Maximum player count                                  |
 | `SQUAD_MAXTICKRATE`   | `50`                      | Server tick rate                                      |
 | `SQUAD_MODS`          | `()`                      | Workshop mod IDs, e.g. `(13371337 12341234)`          |
@@ -63,7 +64,7 @@ Copy `.env.example` to `.env` and adjust values.
 | `LOG_LEVEL`           | `info`    | Log level (`debug`, `info`, `warn`, `error`)         |
 | `SQUADSCRIPT_RCON_HOST` | `127.0.0.1` | RCON host for SquadScript connection                |
 | `SQUADSCRIPT_RCON_PORT` | `21114` | RCON port for SquadScript connection                   |
-| `SQUADSCRIPT_RCON_PASSWORD` | `CHANGE_ME` | RCON password for SquadScript connection (must match Squad `Server.cfg`) |
+| `SQUADSCRIPT_RCON_PASSWORD` | value from `SQUAD_RCON_PASSWORD` | Optional override; by default uses `SQUAD_RCON_PASSWORD` |
 | `SQUADSCRIPT_LOG_DIR` | `/home/steam/squad-dedicated/SquadGame/Saved/Logs` | Squad log directory path |
 | `SQUADSCRIPT_HEALTH_PORT` | `3002` | Internal HTTP health endpoint start port (auto-falls back to next ports if busy) |
 | `SQUADSCRIPT_RETRY_MS`    | `5000` | Retry delay (ms) when startup dependencies are not ready |

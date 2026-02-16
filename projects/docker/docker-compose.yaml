@@ -15,6 +15,7 @@ services:
       - QUERYPORT=${SQUAD_QUERYPORT:-27165}
       - BEACONPORT=${SQUAD_BEACONPORT:-15000}
       - RCONPORT=${SQUAD_RCONPORT:-21114}
+      - RCONPASSWORD=${SQUAD_RCON_PASSWORD:-squadscript-rcon}
       - FIXEDMAXPLAYERS=${SQUAD_MAXPLAYERS:-80}
       - FIXEDMAXTICKRATE=${SQUAD_MAXTICKRATE:-50}
       - RANDOM=NONE
@@ -51,7 +52,7 @@ services:
       - SQUADSCRIPT_RETRY_MS=${SQUADSCRIPT_RETRY_MS:-5000}
       - SQUADSCRIPT_RCON_HOST=${SQUADSCRIPT_RCON_HOST:-127.0.0.1}
       - SQUADSCRIPT_RCON_PORT=${SQUADSCRIPT_RCON_PORT:-21114}
-      - SQUADSCRIPT_RCON_PASSWORD=${SQUADSCRIPT_RCON_PASSWORD:-CHANGE_ME}
+      - SQUADSCRIPT_RCON_PASSWORD=${SQUAD_RCON_PASSWORD:-squadscript-rcon}
       - SQUADSCRIPT_LOG_DIR=${SQUADSCRIPT_LOG_DIR:-/home/steam/squad-dedicated/SquadGame/Saved/Logs}
     healthcheck:
       test: ["CMD", "bun", "-e", "const start = Number(process.env.SQUADSCRIPT_HEALTH_PORT || '3002'); const check = async () => { for (let offset = 0; offset < 10; offset += 1) { const port = start + offset; try { const res = await fetch('http://127.0.0.1:' + port + '/health'); if (res.ok) { process.exit(0); } } catch {} } process.exit(1); }; check();"]

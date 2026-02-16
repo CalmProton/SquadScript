@@ -212,10 +212,19 @@ async function main(): Promise<void> {
     configLoaded = true;
   }
 
+  let rconWaitCycles = 0;
   while (!(await isPortOpen(serverOptions.rcon.host, serverOptions.rcon.port))) {
+    rconWaitCycles += 1;
     log.info(
       `Waiting for RCON endpoint ${serverOptions.rcon.host}:${serverOptions.rcon.port}...`,
     );
+
+    if (rconWaitCycles % 12 === 0) {
+      log.warn(
+        `RCON endpoint is still unavailable. Verify SQUAD_RCONPORT and SQUAD_RCON_PASSWORD are set and match SQUADSCRIPT_RCON_PORT / SQUADSCRIPT_RCON_PASSWORD.`,
+      );
+    }
+
     await sleep(retryMs);
   }
 
