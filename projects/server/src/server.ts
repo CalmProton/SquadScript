@@ -838,7 +838,7 @@ export class SquadServer extends TypedEventEmitter<ServerEventMap> {
     if (nextResult.ok) {
       this.layerService.updateNext(nextResult.value);
     } else {
-      this.log.trace(`Failed to get next layer: ${nextResult.error.message}`);
+      this.log.debug(`Failed to get next layer: ${nextResult.error.message}`);
     }
   }
 
