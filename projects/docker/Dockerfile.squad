@@ -1,0 +1,10 @@
+FROM cm2network/squad
+
+USER root
+
+COPY projects/docker/squad-entry.sh /home/steam/entry.sh
+
+RUN chmod 755 /home/steam/entry.sh \
+  && chown steam:steam /home/steam/entry.sh
+
+USER steam

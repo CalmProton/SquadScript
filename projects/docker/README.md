@@ -6,7 +6,7 @@ Run a [Squad dedicated game server](https://hub.docker.com/r/cm2network/squad) a
 
 | Service               | Image / Build           | Description                                                       |
 | --------------------- | ----------------------- | ----------------------------------------------------------------- |
-| `squad`               | `cm2network/squad`      | Squad dedicated game server with automatic updates via SteamCMD   |
+| `squad`               | `Dockerfile.squad`      | Squad dedicated game server with automatic updates via SteamCMD   |
 | `squadscript-server`  | `Dockerfile.server`     | Core SquadScript orchestrator — RCON, log parser, plugin engine   |
 | `squadscript-app`     | `Dockerfile.app`        | Nuxt admin dashboard for server management                        |
 
@@ -47,6 +47,8 @@ Copy `.env.example` to `.env` and adjust values.
 | `SQUAD_MODS`          | `()`                      | Workshop mod IDs, e.g. `(13371337 12341234)`          |
 | `SQUAD_SERVER_NAME`   | `Squad Dedicated Server`  | Server name shown in the server browser               |
 | `SQUAD_MULTIHOME`     | *(empty)*                 | Bind IP when host has multiple addresses              |
+
+`Dockerfile.squad` extends `cm2network/squad` and ensures `SQUAD_RCON_PASSWORD` is written to `Rcon.cfg` on each startup so RCON is enabled by default.
 
 #### SquadScript App
 
@@ -112,7 +114,10 @@ To run additional Squad servers, duplicate the `squad` service with different po
 
 ```yaml
 squad-2:
-  image: cm2network/squad
+  build:
+    context: ../../
+    dockerfile: projects/docker/Dockerfile.squad
+  image: squadscript/squad:local
   container_name: squadscript-squad-2
   restart: unless-stopped
   network_mode: host

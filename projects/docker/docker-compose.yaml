@@ -4,7 +4,10 @@ services:
   # https://hub.docker.com/r/cm2network/squad
   # ---------------------------------------------------------------------------
   squad:
-    image: cm2network/squad
+    build:
+      context: ../../
+      dockerfile: projects/docker/Dockerfile.squad
+    image: squadscript/squad:local
     container_name: squadscript-squad
     restart: unless-stopped
     network_mode: host
