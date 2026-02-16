@@ -83,6 +83,7 @@ services:
       - NUXT_ADMIN_USERNAME=${APP_ADMIN_USERNAME:-admin}
       - NUXT_ADMIN_PASSWORD=${APP_ADMIN_PASSWORD:-admin}
       - NUXT_SESSION_PASSWORD=${APP_SESSION_PASSWORD:-change-me-to-a-random-secret-min-32-chars}
+      - NUXT_SESSION_COOKIE_SECURE=${APP_SESSION_COOKIE_SECURE:-false}
     healthcheck:
       test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:3000/').then((res)=>process.exit(res.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s

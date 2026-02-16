@@ -73,6 +73,11 @@ export default defineNuxtConfig({
     adminPassword: process.env.NUXT_ADMIN_PASSWORD || 'admin',
     session: {
       maxAge: 60 * 60 * 24 * 7, // 1 week
+      cookie: {
+        // Secure cookies require HTTPS. Set NUXT_SESSION_COOKIE_SECURE=false
+        // when running behind a reverse proxy without HTTPS (e.g. Coolify, Traefik).
+        secure: process.env.NODE_ENV === 'production',
+      },
     },
   },
 
