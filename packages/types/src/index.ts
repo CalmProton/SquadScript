@@ -193,3 +193,79 @@ export type {
   PluginConfig,
   VerbosityConfig,
 } from './config/index.js';
+
+// =============================================================================
+// API Types
+// =============================================================================
+export type {
+  // Requests
+  LoginRequest,
+  WarnPlayerRequest,
+  KickPlayerRequest,
+  BanPlayerRequest,
+  MessagePlayerRequest,
+  ExecuteRconRequest,
+  BroadcastRequest,
+  ChangeLayerRequest,
+  SetNextLayerRequest,
+  UpdatePluginRequest,
+  AddPluginRequest,
+  UpdateServerConfigRequest,
+  UpdateRulesRequest,
+  UpdateAdminsRequest,
+  UpdateRotationRequest,
+  CreateUserRequest,
+  UpdateUserRequest,
+  UpdateRoleRequest,
+  UpdateNotificationSettingsRequest,
+  LogsQueryParams,
+  MetricsHistoryParams,
+
+  // Responses
+  AuthTokenResponse,
+  ServerStateSnapshot,
+  ServerInfoDTO,
+  LayerDTO,
+  PlayerDTO,
+  SquadDTO,
+  MetricsSnapshot,
+  PluginDTO,
+  PluginOptionSpecDTO,
+  LogEntryDTO,
+  PaginatedResponse,
+  DashboardUserDTO,
+  RoleDTO,
+  RconCommandResultDTO,
+  RconHistoryEntryDTO,
+  NotificationDTO,
+  AuditLogEntryDTO,
+  ServerConfigDTO,
+  MapRotationDTO,
+  BanHistoryEntryDTO,
+
+  // WebSocket
+  WSChannel,
+  WSClientMessage,
+  WSServerMessage,
+  WSPlayerEvent,
+  WSChatEvent,
+  WSKillEvent,
+  WSGameEvent,
+  WSAdminEvent,
+  WSPluginEvent,
+  WSLogEvent,
+} from './api/index.js';
+
+// =============================================================================
+// Dashboard Types
+// =============================================================================
+export type {
+  DashboardRole,
+  DashboardUser,
+  MetricsDataPoint,
+  NotificationSeverity,
+  NotificationType,
+  Notification,
+  AuditAction,
+  AuditLogEntry,
+} from './dashboard/index.js';

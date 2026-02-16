@@ -12,10 +12,17 @@ import { Socket } from 'node:net';
 
 import { SquadServer } from './server.js';
 import type { SquadServerOptions } from './types.js';
+import { createDatabase } from './db/index.js';
+import { runMigrations } from './db/migrate.js';
+import { createApi } from './api/index.js';
+import { MetricsCollector } from './metrics/collector.js';
+import { setupBroadcaster } from './api/websocket/broadcaster.js';
+import { AuthService } from './api/modules/auth/service.js';
 
 const DEFAULT_CONFIG_PATH = '/app/config.json';
 const DEFAULT_RETRY_MS = 5000;
 const DEFAULT_HEALTH_PORT = 3002;
+const DEFAULT_API_PORT = 3001;
 const MAX_HEALTH_PORT_TRIES = 10;
 
 function isPortOpen(host: string, port: number, timeoutMs = 1500): Promise<boolean> {
@@ -254,6 +261,10 @@ async function main(): Promise<void> {
   const shutdown = async (signal: NodeJS.Signals): Promise<void> => {
     log.info(`Received ${signal}, shutting down`);
 
+    if (metricsCollector !== null) {
+      metricsCollector.stop();
+    }
+
     if (server !== null) {
       const stopResult = await server.stop();
       if (!stopResult.ok) {
@@ -266,6 +277,45 @@ async function main(): Promise<void> {
 
   process.on('SIGINT', () => void shutdown('SIGINT'));
   process.on('SIGTERM', () => void shutdown('SIGTERM'));
+
+  // =========================================================================
+  // Database & API Initialization
+  // =========================================================================
+
+  const apiPort = Number(process.env.SQUADSCRIPT_API_PORT ?? DEFAULT_API_PORT);
+  let metricsCollector: MetricsCollector | null = null;
+
+  try {
+    // 1. Initialize database and run migrations
+    log.info('Initializing database...');
+    const db = createDatabase();
+
+    try {
+      await runMigrations();
+      log.info('Database migrations applied successfully');
+    } catch (migrationError) {
+      log.warn(`Database migrations failed (non-fatal): ${migrationError instanceof Error ? migrationError.message : String(migrationError)}`);
+    }
+
+    // 2. Ensure default admin user exists
+    await AuthService.ensureDefaultAdmin(db);
+
+    // 3. Start metrics collector
+    metricsCollector = new MetricsCollector(server!, db);
+    metricsCollector.start();
+    log.info('Metrics collector started');
+
+    // 4. Create and start API server
+    const api = createApi(server!, db, metricsCollector);
+    api.listen(apiPort);
+    log.info('API server started', { port: apiPort });
+
+    // 5. Set up WebSocket event broadcaster
+    setupBroadcaster(server!, metricsCollector);
+    log.info('WebSocket broadcaster initialized');
+  } catch (apiError) {
+    log.error(`Failed to start API server (non-fatal): ${apiError instanceof Error ? apiError.message : String(apiError)}`);
+  }
 
   await new Promise(() => {
     // Keep process running

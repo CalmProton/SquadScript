@@ -33,6 +33,28 @@ services:
       start_period: 60s
 
   # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # Server database (authoritative data for projects/server)
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:18-alpine
+    container_name: squadscript-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-squadscript}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-squadscript}
+      POSTGRES_DB: ${POSTGRES_DB:-squadscript}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-squadscript}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
   # SquadScript Server
   # Core orchestrator: RCON client, log parser, plugin system
   # ---------------------------------------------------------------------------
@@ -46,17 +68,22 @@ services:
     depends_on:
       squad:
         condition: service_started
+      postgres:
+        condition: service_healthy
     volumes:
       - squad-data:/home/steam/squad-dedicated/:ro
     environment:
       - SQUADSCRIPT_CONFIG=/app/config.json
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - SQUADSCRIPT_HEALTH_PORT=${SQUADSCRIPT_HEALTH_PORT:-3002}
+      - SQUADSCRIPT_API_PORT=${SQUADSCRIPT_API_PORT:-3001}
       - SQUADSCRIPT_RETRY_MS=${SQUADSCRIPT_RETRY_MS:-5000}
       - SQUADSCRIPT_RCON_HOST=${SQUADSCRIPT_RCON_HOST:-127.0.0.1}
       - SQUADSCRIPT_RCON_PORT=${SQUADSCRIPT_RCON_PORT:-21114}
       - SQUADSCRIPT_RCON_PASSWORD=${SQUAD_RCON_PASSWORD:-squadscript-rcon}
       - SQUADSCRIPT_LOG_DIR=${SQUADSCRIPT_LOG_DIR:-/home/steam/squad-dedicated/SquadGame/Saved/Logs}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-squadscript}:${POSTGRES_PASSWORD:-squadscript}@postgres:5432/${POSTGRES_DB:-squadscript}
+      - JWT_SECRET=${JWT_SECRET:-change-me-32-chars-min}
     healthcheck:
       test: ["CMD", "bun", "-e", "const start = Number(process.env.SQUADSCRIPT_HEALTH_PORT || '3002'); const check = async () => { for (let offset = 0; offset < 10; offset += 1) { const port = start + offset; try { const res = await fetch('http://127.0.0.1:' + port + '/health'); if (res.ok) { process.exit(0); } } catch {} } process.exit(1); }; check();"]
       interval: 15s
@@ -84,6 +111,8 @@ services:
       - NUXT_ADMIN_PASSWORD=${APP_ADMIN_PASSWORD:-admin}
       - NUXT_SESSION_PASSWORD=${APP_SESSION_PASSWORD:-change-me-to-a-random-secret-min-32-chars}
       - NUXT_SESSION_COOKIE_SECURE=${APP_SESSION_COOKIE_SECURE:-false}
+      - NUXT_SQUADSCRIPT_API_URL=http://squadscript-server:3001
+      - NUXT_PGLITE_PATH=/app/.data/app.pglite
     healthcheck:
       test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:3000/').then((res)=>process.exit(res.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
@@ -93,4 +122,6 @@ services:
 
 volumes:
   squad-data:
+    driver: local
+  postgres-data:
     driver: local

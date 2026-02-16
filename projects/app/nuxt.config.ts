@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: [
+    '@pinia/nuxt',
     'nuxt-i18n-micro',
     'shadcn-nuxt',
     'nuxt-auth-utils',
@@ -73,6 +74,8 @@ export default defineNuxtConfig({
 
   // Runtime config for auth secrets
   runtimeConfig: {
+    squadscriptApiUrl: process.env.SQUADSCRIPT_API_URL || 'http://127.0.0.1:3001',
+    pglitePath: process.env.NUXT_PGLITE_PATH || './.data/app.pglite',
     adminUsername: process.env.NUXT_ADMIN_USERNAME || 'admin',
     adminPassword: process.env.NUXT_ADMIN_PASSWORD || 'admin',
     session: {
