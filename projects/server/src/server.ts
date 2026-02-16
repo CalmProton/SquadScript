@@ -942,6 +942,15 @@ export class SquadServer extends TypedEventEmitter<ServerEventMap> {
       const squadID = asSquadID(event.squadID);
       if (!squadID) return;
 
+      this.log.info('RCON squad created event received', {
+        squadID: event.squadID,
+        squadName: event.squadName,
+        teamName: event.teamName,
+        playerName: event.playerName,
+        eosID: event.eosID,
+        steamID: event.steamID,
+      });
+
       // Get player and infer team from their team assignment
       const player = this.playerService.getByEOSID(event.eosID);
       const teamID = player?.teamID ?? asTeamID(1); // Default to team 1 if unknown
@@ -1009,19 +1018,40 @@ export class SquadServer extends TypedEventEmitter<ServerEventMap> {
     // Player lifecycle events
     this.logParser.on('PLAYER_CONNECTED', (event) => {
       this.playerService.updateFromPartial(event.player);
+      this.log.info('Player connected', {
+        eosID: event.player.eosID,
+        steamID: event.player.steamID ?? null,
+        ip: event.ip,
+      });
       this.emit('PLAYER_CONNECTED', event);
     });
 
     this.logParser.on('PLAYER_DISCONNECTED', (event) => {
+      this.log.info('Player disconnected', {
+        eosID: event.player.eosID,
+        steamID: event.player.steamID ?? null,
+        name: event.player.name ?? null,
+      });
       this.emit('PLAYER_DISCONNECTED', event);
     });
 
     this.logParser.on('PLAYER_JOIN_SUCCEEDED', (event) => {
       this.playerService.updateFromPartial(event.player);
+      this.log.info('Player join succeeded', {
+        eosID: event.player.eosID,
+        steamID: event.player.steamID ?? null,
+        name: event.player.name ?? null,
+      });
       this.emit('PLAYER_JOIN_SUCCEEDED', event);
     });
 
     this.logParser.on('PLAYER_POSSESS', (event) => {
+      this.log.info('Player possessed pawn', {
+        eosID: event.player.eosID,
+        steamID: event.player.steamID ?? null,
+        pawnClass: event.pawnClass,
+        isValidPawn: event.isValidPawn,
+      });
       this.emit('PLAYER_POSSESS', event);
     });
 

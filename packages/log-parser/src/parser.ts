@@ -67,6 +67,7 @@ export class LogParser extends TypedEventEmitter<LogParserEventMap> {
   private readonly rules: readonly ParsingRule[];
   private readonly store: EventStore;
   private readonly queue: BoundedQueue<string>;
+  private readonly unmatchedSamples: string[] = [];
 
   private isWatching = false;
   private processingInterval: ReturnType<typeof setInterval> | null = null;
@@ -309,6 +310,10 @@ export class LogParser extends TypedEventEmitter<LogParserEventMap> {
     // No rule matched
     this.stats.linesUnmatched++;
 
+    if (this.unmatchedSamples.length < 5 && line.length > 0) {
+      this.unmatchedSamples.push(line.slice(0, 220));
+    }
+
     // Log unmatched lines at trace level for debugging
     this.logger.verbose('log-parser', `Unmatched line: ${line.slice(0, 100)}...`);
   }
@@ -327,5 +332,15 @@ export class LogParser extends TypedEventEmitter<LogParserEventMap> {
       queueDepth: stats.queueDepth,
       averageLatencyMs: stats.averageLatencyMs.toFixed(2),
     });
+
+    if (stats.linesProcessed >= 1000 && stats.linesMatched === 0) {
+      this.logger.warn(
+        'log-parser',
+        'No log lines matched parser rules yet; Squad log format may differ from expected patterns',
+        {
+          sampleUnmatchedLines: this.unmatchedSamples,
+        },
+      );
+    }
   }
 }
