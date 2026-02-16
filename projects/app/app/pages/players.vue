@@ -1,258 +1,286 @@
 <script setup lang="ts">
+import { usePlayersStore } from '~/stores/players';
+import { useRconStore } from '~/stores/rcon';
+import type { PlayerDTO } from '@squadscript/types/api';
+import { Input } from '~/components/ui/input';
+import { Badge } from '~/components/ui/badge';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '~/components/ui/table';
+import {
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+} from '~/components/ui/dialog';
+import { Button } from '~/components/ui/button';
+import { Textarea } from '~/components/ui/textarea';
+import { Label } from '~/components/ui/label';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '~/components/ui/select';
+
 const { $t } = useNuxtApp();
 
 definePageMeta({
   middleware: 'auth',
 });
 
-// Mock data - replace with actual API calls
-const players = ref([
-  { id: '1', name: 'Player1', steamId: '76561198012345678', team: 'US Army', squad: 'SQUAD 1', role: 'Squad Leader' },
-  { id: '2', name: 'Player2', steamId: '76561198012345679', team: 'Russian Army', squad: 'SQUAD 2', role: 'Rifleman' },
-  { id: '3', name: 'Player3', steamId: '76561198012345680', team: 'US Army', squad: 'SQUAD 1', role: 'Medic' },
-]);
+const playersStore = usePlayersStore();
+const api = useApi();
 
-const selectedPlayer = ref<typeof players.value[0] | null>(null);
-const showKickDialog = ref(false);
-const showBanDialog = ref(false);
-const showWarnDialog = ref(false);
-const showMessageDialog = ref(false);
+onMounted(() => {
+  playersStore.fetchPlayers();
+});
 
+const selectedPlayer = ref<PlayerDTO | null>(null);
+const activeDialog = ref<'warn' | 'kick' | 'ban' | 'message' | null>(null);
+const actionLoading = ref(false);
+
+const warnMessage = ref('');
 const kickReason = ref('');
 const banReason = ref('');
-const banDuration = ref('1h');
-const warnMessage = ref('');
+const banDuration = ref('3600');
 const messageContent = ref('');
 
-function openAction(player: typeof players.value[0], action: string) {
+function openAction(player: PlayerDTO, action: 'warn' | 'kick' | 'ban' | 'message') {
   selectedPlayer.value = player;
-  if (action === 'kick') showKickDialog.value = true;
-  if (action === 'ban') showBanDialog.value = true;
-  if (action === 'warn') showWarnDialog.value = true;
-  if (action === 'message') showMessageDialog.value = true;
+  activeDialog.value = action;
 }
 
-function executeKick() {
-  // TODO: Implement kick via RCON
-  console.log('Kick:', selectedPlayer.value?.name, kickReason.value);
-  showKickDialog.value = false;
-  kickReason.value = '';
-}
-
-function executeBan() {
-  // TODO: Implement ban via RCON
-  console.log('Ban:', selectedPlayer.value?.name, banReason.value, banDuration.value);
-  showBanDialog.value = false;
-  banReason.value = '';
-  banDuration.value = '1h';
-}
-
-function executeWarn() {
-  // TODO: Implement warn via RCON
-  console.log('Warn:', selectedPlayer.value?.name, warnMessage.value);
-  showWarnDialog.value = false;
+function closeDialog() {
+  activeDialog.value = null;
+  selectedPlayer.value = null;
   warnMessage.value = '';
+  kickReason.value = '';
+  banReason.value = '';
+  banDuration.value = '3600';
+  messageContent.value = '';
 }
 
-function sendMessage() {
-  // TODO: Implement message via RCON
-  console.log('Message to:', selectedPlayer.value?.name, messageContent.value);
-  showMessageDialog.value = false;
-  messageContent.value = '';
+async function executeWarn() {
+  if (!selectedPlayer.value) return;
+  actionLoading.value = true;
+  try {
+    await api.post(`/players/${selectedPlayer.value.eosId}/warn`, {
+      message: warnMessage.value,
+    });
+    closeDialog();
+  } finally {
+    actionLoading.value = false;
+  }
+}
+
+async function executeKick() {
+  if (!selectedPlayer.value) return;
+  actionLoading.value = true;
+  try {
+    await api.post(`/players/${selectedPlayer.value.eosId}/kick`, {
+      reason: kickReason.value,
+    });
+    closeDialog();
+    playersStore.removePlayer(selectedPlayer.value.eosId);
+  } finally {
+    actionLoading.value = false;
+  }
+}
+
+async function executeBan() {
+  if (!selectedPlayer.value) return;
+  actionLoading.value = true;
+  try {
+    await api.post(`/players/${selectedPlayer.value.eosId}/ban`, {
+      reason: banReason.value,
+      duration: Number(banDuration.value),
+    });
+    closeDialog();
+    playersStore.removePlayer(selectedPlayer.value.eosId);
+  } finally {
+    actionLoading.value = false;
+  }
+}
+
+async function executeMessage() {
+  if (!selectedPlayer.value) return;
+  actionLoading.value = true;
+  try {
+    await api.post(`/players/${selectedPlayer.value.eosId}/warn`, {
+      message: messageContent.value,
+    });
+    closeDialog();
+  } finally {
+    actionLoading.value = false;
+  }
+}
+
+function getTeamLabel(teamId: number | null): string {
+  if (teamId === 1) return 'Team 1';
+  if (teamId === 2) return 'Team 2';
+  return 'Unassigned';
 }
 </script>
 
 <template>
   <div class="space-y-6">
-    <h1 class="text-3xl font-bold">{{ $t('players.title') }}</h1>
+    <div class="flex items-center justify-between">
+      <h1 class="text-3xl font-bold">{{ $t('players.title') }}</h1>
+      <Badge variant="outline">{{ playersStore.playerCount }} online</Badge>
+    </div>
+
+    <!-- Search -->
+    <Input
+      v-model="playersStore.search"
+      :placeholder="$t('players.searchPlaceholder') || 'Search players...'"
+      class="max-w-sm"
+    />
 
     <!-- Players Table -->
-    <div class="rounded-lg border bg-card">
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead>
-            <tr class="border-b bg-muted/50">
-              <th class="px-4 py-3 text-left text-sm font-medium">{{ $t('players.name') }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium">{{ $t('players.steamId') }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium">{{ $t('players.team') }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium">{{ $t('players.squad') }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium">{{ $t('players.role') }}</th>
-              <th class="px-4 py-3 text-left text-sm font-medium">{{ $t('players.actions') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="player in players" :key="player.id" class="border-b last:border-0">
-              <td class="px-4 py-3 text-sm">{{ player.name }}</td>
-              <td class="px-4 py-3 text-sm font-mono">{{ player.steamId }}</td>
-              <td class="px-4 py-3 text-sm">{{ player.team }}</td>
-              <td class="px-4 py-3 text-sm">{{ player.squad }}</td>
-              <td class="px-4 py-3 text-sm">{{ player.role }}</td>
-              <td class="px-4 py-3">
-                <div class="flex flex-wrap gap-1">
-                  <button
-                    class="rounded bg-yellow-500/10 px-2 py-1 text-xs text-yellow-600 hover:bg-yellow-500/20"
-                    @click="openAction(player, 'warn')"
-                  >
-                    {{ $t('players.warn') }}
-                  </button>
-                  <button
-                    class="rounded bg-blue-500/10 px-2 py-1 text-xs text-blue-600 hover:bg-blue-500/20"
-                    @click="openAction(player, 'message')"
-                  >
-                    {{ $t('players.message') }}
-                  </button>
-                  <button
-                    class="rounded bg-orange-500/10 px-2 py-1 text-xs text-orange-600 hover:bg-orange-500/20"
-                    @click="openAction(player, 'kick')"
-                  >
-                    {{ $t('players.kick') }}
-                  </button>
-                  <button
-                    class="rounded bg-red-500/10 px-2 py-1 text-xs text-red-600 hover:bg-red-500/20"
-                    @click="openAction(player, 'ban')"
-                  >
-                    {{ $t('players.ban') }}
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr v-if="players.length === 0">
-              <td colspan="6" class="px-4 py-8 text-center text-muted-foreground">
-                {{ $t('players.noPlayers') }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Kick Dialog -->
-    <div v-if="showKickDialog" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div class="w-full max-w-md rounded-lg bg-card p-6">
-        <h2 class="mb-4 text-lg font-semibold">{{ $t('players.kick') }}: {{ selectedPlayer?.name }}</h2>
-        <div class="mb-4">
-          <label class="mb-2 block text-sm font-medium">{{ $t('players.kickReason') }}</label>
-          <input
-            v-model="kickReason"
-            type="text"
-            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
-        </div>
-        <div class="flex justify-end gap-2">
-          <button
-            class="rounded-md bg-secondary px-4 py-2 text-sm"
-            @click="showKickDialog = false"
-          >
-            {{ $t('general.cancel') }}
-          </button>
-          <button
-            class="rounded-md bg-destructive px-4 py-2 text-sm text-white"
-            @click="executeKick"
-          >
-            {{ $t('players.kick') }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Ban Dialog -->
-    <div v-if="showBanDialog" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div class="w-full max-w-md rounded-lg bg-card p-6">
-        <h2 class="mb-4 text-lg font-semibold">{{ $t('players.ban') }}: {{ selectedPlayer?.name }}</h2>
-        <div class="mb-4">
-          <label class="mb-2 block text-sm font-medium">{{ $t('players.banReason') }}</label>
-          <input
-            v-model="banReason"
-            type="text"
-            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
-        </div>
-        <div class="mb-4">
-          <label class="mb-2 block text-sm font-medium">{{ $t('players.banDuration') }}</label>
-          <select
-            v-model="banDuration"
-            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          >
-            <option value="1h">1 hour</option>
-            <option value="1d">1 day</option>
-            <option value="7d">7 days</option>
-            <option value="30d">30 days</option>
-            <option value="permanent">Permanent</option>
-          </select>
-        </div>
-        <div class="flex justify-end gap-2">
-          <button
-            class="rounded-md bg-secondary px-4 py-2 text-sm"
-            @click="showBanDialog = false"
-          >
-            {{ $t('general.cancel') }}
-          </button>
-          <button
-            class="rounded-md bg-destructive px-4 py-2 text-sm text-white"
-            @click="executeBan"
-          >
-            {{ $t('players.ban') }}
-          </button>
-        </div>
-      </div>
+    <div class="rounded-lg border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{{ $t('players.name') }}</TableHead>
+            <TableHead>{{ $t('players.steamId') }}</TableHead>
+            <TableHead>{{ $t('players.team') }}</TableHead>
+            <TableHead>{{ $t('players.squad') }}</TableHead>
+            <TableHead>{{ $t('players.role') }}</TableHead>
+            <TableHead>{{ $t('players.actions') }}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow v-for="player in playersStore.filtered" :key="player.eosId">
+            <TableCell class="font-medium">
+              {{ player.name }}
+              <Badge v-if="player.isSquadLeader" variant="secondary" class="ml-1 text-xs">SL</Badge>
+            </TableCell>
+            <TableCell class="font-mono text-xs">{{ player.steamId ?? player.eosId }}</TableCell>
+            <TableCell>
+              <Badge :variant="player.teamId === 1 ? 'default' : player.teamId === 2 ? 'secondary' : 'outline'">
+                {{ getTeamLabel(player.teamId) }}
+              </Badge>
+            </TableCell>
+            <TableCell>{{ player.squadName ?? '-' }}</TableCell>
+            <TableCell>{{ player.role ?? '-' }}</TableCell>
+            <TableCell>
+              <div class="flex flex-wrap gap-1">
+                <Button size="sm" variant="outline" class="h-7 text-xs" @click="openAction(player, 'warn')">
+                  {{ $t('players.warn') }}
+                </Button>
+                <Button size="sm" variant="outline" class="h-7 text-xs" @click="openAction(player, 'message')">
+                  {{ $t('players.message') }}
+                </Button>
+                <Button size="sm" variant="outline" class="h-7 text-xs text-orange-600" @click="openAction(player, 'kick')">
+                  {{ $t('players.kick') }}
+                </Button>
+                <Button size="sm" variant="destructive" class="h-7 text-xs" @click="openAction(player, 'ban')">
+                  {{ $t('players.ban') }}
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+          <TableRow v-if="playersStore.filtered.length === 0">
+            <TableCell colspan="6" class="py-8 text-center text-muted-foreground">
+              {{ $t('players.noPlayers') }}
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
     </div>
 
     <!-- Warn Dialog -->
-    <div v-if="showWarnDialog" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div class="w-full max-w-md rounded-lg bg-card p-6">
-        <h2 class="mb-4 text-lg font-semibold">{{ $t('players.warn') }}: {{ selectedPlayer?.name }}</h2>
-        <div class="mb-4">
-          <label class="mb-2 block text-sm font-medium">{{ $t('players.warnMessage') }}</label>
-          <textarea
-            v-model="warnMessage"
-            rows="3"
-            class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
+    <Dialog :open="activeDialog === 'warn'" @update:open="closeDialog">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{{ $t('players.warn') }}: {{ selectedPlayer?.name }}</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4 py-4">
+          <div class="space-y-2">
+            <Label>{{ $t('players.warnMessage') }}</Label>
+            <Textarea v-model="warnMessage" rows="3" />
+          </div>
         </div>
-        <div class="flex justify-end gap-2">
-          <button
-            class="rounded-md bg-secondary px-4 py-2 text-sm"
-            @click="showWarnDialog = false"
-          >
-            {{ $t('general.cancel') }}
-          </button>
-          <button
-            class="rounded-md bg-yellow-600 px-4 py-2 text-sm text-white"
-            @click="executeWarn"
-          >
+        <DialogFooter>
+          <Button variant="outline" @click="closeDialog">{{ $t('general.cancel') }}</Button>
+          <Button variant="default" :disabled="actionLoading || !warnMessage" @click="executeWarn">
             {{ $t('players.warn') }}
-          </button>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- Kick Dialog -->
+    <Dialog :open="activeDialog === 'kick'" @update:open="closeDialog">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{{ $t('players.kick') }}: {{ selectedPlayer?.name }}</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4 py-4">
+          <div class="space-y-2">
+            <Label>{{ $t('players.kickReason') }}</Label>
+            <Input v-model="kickReason" />
+          </div>
         </div>
-      </div>
-    </div>
+        <DialogFooter>
+          <Button variant="outline" @click="closeDialog">{{ $t('general.cancel') }}</Button>
+          <Button variant="destructive" :disabled="actionLoading || !kickReason" @click="executeKick">
+            {{ $t('players.kick') }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- Ban Dialog -->
+    <Dialog :open="activeDialog === 'ban'" @update:open="closeDialog">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{{ $t('players.ban') }}: {{ selectedPlayer?.name }}</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4 py-4">
+          <div class="space-y-2">
+            <Label>{{ $t('players.banReason') }}</Label>
+            <Input v-model="banReason" />
+          </div>
+          <div class="space-y-2">
+            <Label>{{ $t('players.banDuration') }}</Label>
+            <Select v-model="banDuration">
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3600">1 hour</SelectItem>
+                <SelectItem value="86400">1 day</SelectItem>
+                <SelectItem value="604800">7 days</SelectItem>
+                <SelectItem value="2592000">30 days</SelectItem>
+                <SelectItem value="0">Permanent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="closeDialog">{{ $t('general.cancel') }}</Button>
+          <Button variant="destructive" :disabled="actionLoading || !banReason" @click="executeBan">
+            {{ $t('players.ban') }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
     <!-- Message Dialog -->
-    <div v-if="showMessageDialog" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div class="w-full max-w-md rounded-lg bg-card p-6">
-        <h2 class="mb-4 text-lg font-semibold">{{ $t('players.message') }}: {{ selectedPlayer?.name }}</h2>
-        <div class="mb-4">
-          <label class="mb-2 block text-sm font-medium">{{ $t('players.messageContent') }}</label>
-          <textarea
-            v-model="messageContent"
-            rows="3"
-            class="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
+    <Dialog :open="activeDialog === 'message'" @update:open="closeDialog">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{{ $t('players.message') }}: {{ selectedPlayer?.name }}</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4 py-4">
+          <div class="space-y-2">
+            <Label>{{ $t('players.messageContent') }}</Label>
+            <Textarea v-model="messageContent" rows="3" />
+          </div>
         </div>
-        <div class="flex justify-end gap-2">
-          <button
-            class="rounded-md bg-secondary px-4 py-2 text-sm"
-            @click="showMessageDialog = false"
-          >
-            {{ $t('general.cancel') }}
-          </button>
-          <button
-            class="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground"
-            @click="sendMessage"
-          >
+        <DialogFooter>
+          <Button variant="outline" @click="closeDialog">{{ $t('general.cancel') }}</Button>
+          <Button :disabled="actionLoading || !messageContent" @click="executeMessage">
             {{ $t('general.submit') }}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>

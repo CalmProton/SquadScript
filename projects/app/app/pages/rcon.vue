@@ -1,87 +1,174 @@
 <script setup lang="ts">
+import { useRconStore } from '~/stores/rcon';
+import { Input } from '~/components/ui/input';
+import { Button } from '~/components/ui/button';
+import { Badge } from '~/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import { ScrollArea } from '~/components/ui/scroll-area';
+import { Separator } from '~/components/ui/separator';
+import {
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
+} from '~/components/ui/dialog';
+import { Textarea } from '~/components/ui/textarea';
+
 const { $t } = useNuxtApp();
 
 definePageMeta({
   middleware: 'auth',
 });
 
+const rconStore = useRconStore();
+
 const command = ref('');
-const history = ref<{ command: string; response: string; timestamp: string }[]>([]);
+const broadcastMessage = ref('');
+const showBroadcastDialog = ref(false);
+const commandHistory = ref<string[]>([]);
+const historyIndex = ref(-1);
 
 async function executeCommand() {
   if (!command.value.trim()) return;
-
   const cmd = command.value.trim();
-  const timestamp = new Date().toLocaleTimeString();
 
-  // TODO: Send command to RCON server
-  // For now, simulate a response
-  const response = `Executed: ${cmd}`;
+  commandHistory.value.push(cmd);
+  historyIndex.value = commandHistory.value.length;
 
-  history.value.unshift({
-    command: cmd,
-    response,
-    timestamp,
-  });
-
+  try {
+    await rconStore.execute(cmd);
+  } catch {
+    // Error is already recorded in history by the store
+  }
   command.value = '';
 }
 
-function clearHistory() {
-  history.value = [];
+function handleKeyDown(e: KeyboardEvent) {
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (historyIndex.value > 0) {
+      historyIndex.value--;
+      command.value = commandHistory.value[historyIndex.value];
+    }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (historyIndex.value < commandHistory.value.length - 1) {
+      historyIndex.value++;
+      command.value = commandHistory.value[historyIndex.value];
+    } else {
+      historyIndex.value = commandHistory.value.length;
+      command.value = '';
+    }
+  }
+}
+
+async function sendBroadcast() {
+  if (!broadcastMessage.value.trim()) return;
+  try {
+    await rconStore.broadcast(broadcastMessage.value.trim());
+    broadcastMessage.value = '';
+    showBroadcastDialog.value = false;
+  } catch {
+    // Error handling
+  }
+}
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString();
 }
 </script>
 
 <template>
   <div class="space-y-6">
-    <h1 class="text-3xl font-bold">{{ $t('rcon.title') }}</h1>
-
-    <!-- Command Input -->
-    <div class="rounded-lg border bg-card p-6">
-      <form class="flex gap-4" @submit.prevent="executeCommand">
-        <input
-          v-model="command"
-          type="text"
-          :placeholder="$t('rcon.placeholder')"
-          class="flex h-10 flex-1 rounded-md border border-input bg-background px-3 py-2 font-mono text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        />
-        <button
-          type="submit"
-          class="inline-flex h-10 items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          {{ $t('rcon.execute') }}
-        </button>
-      </form>
-    </div>
-
-    <!-- Command History -->
-    <div class="rounded-lg border bg-card">
-      <div class="flex items-center justify-between border-b px-6 py-4">
-        <h2 class="font-semibold">{{ $t('rcon.history') }}</h2>
-        <button
-          v-if="history.length > 0"
-          class="text-sm text-muted-foreground hover:text-foreground"
-          @click="clearHistory"
+    <div class="flex items-center justify-between">
+      <h1 class="text-3xl font-bold">{{ $t('rcon.title') }}</h1>
+      <div class="flex items-center gap-2">
+        <Button variant="outline" @click="showBroadcastDialog = true">
+          Broadcast
+        </Button>
+        <Button
+          v-if="rconStore.history.length > 0"
+          variant="ghost"
+          size="sm"
+          @click="rconStore.clearHistory()"
         >
           {{ $t('rcon.clearHistory') }}
-        </button>
+        </Button>
       </div>
+    </div>
 
-      <div class="max-h-[500px] overflow-y-auto">
-        <div v-if="history.length === 0" class="px-6 py-8 text-center text-muted-foreground">
+    <!-- Command Input -->
+    <Card>
+      <CardContent class="pt-6">
+        <form class="flex gap-3" @submit.prevent="executeCommand">
+          <Input
+            v-model="command"
+            :placeholder="$t('rcon.placeholder')"
+            class="flex-1 font-mono"
+            :disabled="rconStore.loading"
+            @keydown="handleKeyDown"
+          />
+          <Button type="submit" :disabled="rconStore.loading || !command.trim()">
+            {{ $t('rcon.execute') }}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+
+    <!-- Command History -->
+    <Card>
+      <CardHeader class="pb-3">
+        <CardTitle class="text-lg">{{ $t('rcon.history') }}</CardTitle>
+      </CardHeader>
+      <Separator />
+      <ScrollArea class="h-[500px]">
+        <div v-if="rconStore.history.length === 0" class="px-6 py-8 text-center text-muted-foreground">
           No commands executed yet
         </div>
 
-        <div v-for="(item, index) in history" :key="index" class="border-b p-4 last:border-0">
+        <div
+          v-for="(item, index) in [...rconStore.history].reverse()"
+          :key="index"
+          class="border-b p-4 last:border-0"
+        >
           <div class="mb-2 flex items-center justify-between">
-            <code class="rounded bg-muted px-2 py-1 font-mono text-sm">{{ item.command }}</code>
-            <span class="text-xs text-muted-foreground">{{ item.timestamp }}</span>
+            <div class="flex items-center gap-2">
+              <code class="rounded bg-muted px-2 py-1 font-mono text-sm">{{ item.command }}</code>
+              <Badge
+                :variant="item.success ? 'default' : 'destructive'"
+                class="text-xs"
+              >
+                {{ item.success ? 'OK' : 'Error' }}
+              </Badge>
+            </div>
+            <span class="text-xs text-muted-foreground">{{ formatTime(item.timestamp) }}</span>
           </div>
           <div class="rounded bg-muted/50 p-3">
             <pre class="whitespace-pre-wrap font-mono text-sm">{{ item.response }}</pre>
           </div>
         </div>
-      </div>
-    </div>
+      </ScrollArea>
+    </Card>
+
+    <!-- Broadcast Dialog -->
+    <Dialog :open="showBroadcastDialog" @update:open="(v: boolean) => showBroadcastDialog = v">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Server Broadcast</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4 py-4">
+          <Textarea
+            v-model="broadcastMessage"
+            placeholder="Enter broadcast message..."
+            rows="3"
+          />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="showBroadcastDialog = false">
+            {{ $t('general.cancel') }}
+          </Button>
+          <Button :disabled="!broadcastMessage.trim()" @click="sendBroadcast">
+            Send Broadcast
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>

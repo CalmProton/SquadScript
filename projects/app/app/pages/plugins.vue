@@ -1,110 +1,184 @@
 <script setup lang="ts">
+import { usePluginsStore } from '~/stores/plugins';
+import type { PluginDTO } from '@squadscript/types/api';
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '~/components/ui/card';
+import { Switch } from '~/components/ui/switch';
+import {
+  Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription,
+} from '~/components/ui/dialog';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '~/components/ui/table';
+
 const { $t } = useNuxtApp();
 
 definePageMeta({
   middleware: 'auth',
 });
 
-// Mock data - replace with actual API calls
-const plugins = ref([
-  { id: 'auto-kick-unassigned', name: 'Auto Kick Unassigned', enabled: true, description: 'Automatically kicks players who remain unassigned' },
-  { id: 'team-randomizer', name: 'Team Randomizer', enabled: true, description: 'Randomizes teams at match start' },
-  { id: 'seeding-mode', name: 'Seeding Mode', enabled: false, description: 'Manages seeding mode rules' },
-  { id: 'squad-name-enforcer', name: 'Squad Name Enforcer', enabled: true, description: 'Enforces squad naming conventions' },
-]);
+const pluginsStore = usePluginsStore();
 
-const selectedPlugin = ref<typeof plugins.value[0] | null>(null);
+onMounted(() => {
+  pluginsStore.fetchPlugins();
+});
+
+const selectedPlugin = ref<PluginDTO | null>(null);
 const showConfigDialog = ref(false);
 
-function togglePlugin(plugin: typeof plugins.value[0]) {
-  plugin.enabled = !plugin.enabled;
-  // TODO: Save to server
-}
-
-function openConfig(plugin: typeof plugins.value[0]) {
+function openConfig(plugin: PluginDTO) {
   selectedPlugin.value = plugin;
   showConfigDialog.value = true;
 }
 
-function saveConfig() {
-  // TODO: Save configuration
+function closeConfig() {
   showConfigDialog.value = false;
+  selectedPlugin.value = null;
+}
+
+async function togglePlugin(plugin: PluginDTO) {
+  try {
+    await pluginsStore.updatePlugin(plugin.name, { enabled: !plugin.enabled });
+  } catch {
+    // Toggle failed - the store won't be updated
+  }
+}
+
+function getStateBadgeVariant(state: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+  if (state === 'running') return 'default';
+  if (state === 'error') return 'destructive';
+  if (state === 'stopped') return 'secondary';
+  return 'outline';
 }
 </script>
 
 <template>
   <div class="space-y-6">
-    <h1 class="text-3xl font-bold">{{ $t('plugins.title') }}</h1>
+    <div class="flex items-center justify-between">
+      <h1 class="text-3xl font-bold">{{ $t('plugins.title') }}</h1>
+      <div class="flex items-center gap-2">
+        <Badge variant="default">{{ pluginsStore.enabledPlugins.length }} enabled</Badge>
+        <Badge variant="outline">{{ pluginsStore.plugins.length }} total</Badge>
+      </div>
+    </div>
 
     <!-- Plugins Grid -->
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <div
-        v-for="plugin in plugins"
-        :key="plugin.id"
-        class="rounded-lg border bg-card p-6"
-      >
-        <div class="mb-4 flex items-start justify-between">
-          <div>
-            <h3 class="font-semibold">{{ plugin.name }}</h3>
-            <p class="mt-1 text-sm text-muted-foreground">{{ plugin.description }}</p>
+      <Card v-for="plugin in pluginsStore.plugins" :key="plugin.name">
+        <CardHeader>
+          <div class="flex items-start justify-between">
+            <div class="space-y-1">
+              <CardTitle class="text-base">{{ plugin.name }}</CardTitle>
+              <CardDescription>{{ plugin.description }}</CardDescription>
+            </div>
+            <Badge :variant="getStateBadgeVariant(plugin.state)" class="text-xs">
+              {{ plugin.state }}
+            </Badge>
           </div>
-          <span
-            :class="[
-              'rounded px-2 py-1 text-xs',
-              plugin.enabled ? 'bg-green-500/10 text-green-600' : 'bg-gray-500/10 text-gray-600'
-            ]"
-          >
-            {{ plugin.enabled ? $t('plugins.enabled') : $t('plugins.disabled') }}
-          </span>
-        </div>
-        <div class="flex gap-2">
-          <button
-            :class="[
-              'rounded-md px-3 py-1.5 text-sm',
-              plugin.enabled ? 'bg-red-500/10 text-red-600 hover:bg-red-500/20' : 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
-            ]"
-            @click="togglePlugin(plugin)"
-          >
-            {{ plugin.enabled ? $t('plugins.disable') : $t('plugins.enable') }}
-          </button>
-          <button
-            class="rounded-md bg-secondary px-3 py-1.5 text-sm hover:bg-secondary/80"
-            @click="openConfig(plugin)"
-          >
+        </CardHeader>
+        <CardContent>
+          <div class="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>v{{ plugin.version }}</span>
+            <span v-if="plugin.optionsSpec.length > 0">
+              &middot; {{ plugin.optionsSpec.length }} options
+            </span>
+          </div>
+        </CardContent>
+        <CardFooter class="flex justify-between">
+          <div class="flex items-center gap-2">
+            <Switch
+              :checked="plugin.enabled"
+              @update:checked="togglePlugin(plugin)"
+            />
+            <span class="text-sm">{{ plugin.enabled ? $t('plugins.enabled') : $t('plugins.disabled') }}</span>
+          </div>
+          <Button size="sm" variant="outline" @click="openConfig(plugin)">
             {{ $t('plugins.configure') }}
-          </button>
-        </div>
-      </div>
+          </Button>
+        </CardFooter>
+      </Card>
 
-      <div v-if="plugins.length === 0" class="col-span-full py-8 text-center text-muted-foreground">
+      <div v-if="pluginsStore.plugins.length === 0 && !pluginsStore.loading" class="col-span-full py-8 text-center text-muted-foreground">
         {{ $t('plugins.noPlugins') }}
       </div>
     </div>
 
     <!-- Config Dialog -->
-    <div v-if="showConfigDialog" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div class="w-full max-w-lg rounded-lg bg-card p-6">
-        <h2 class="mb-4 text-lg font-semibold">
-          {{ $t('plugins.configuration') }}: {{ selectedPlugin?.name }}
-        </h2>
-        <p class="mb-4 text-sm text-muted-foreground">
-          Plugin configuration options will be displayed here based on the plugin's schema.
-        </p>
-        <div class="flex justify-end gap-2">
-          <button
-            class="rounded-md bg-secondary px-4 py-2 text-sm"
-            @click="showConfigDialog = false"
-          >
-            {{ $t('general.cancel') }}
-          </button>
-          <button
-            class="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground"
-            @click="saveConfig"
-          >
-            {{ $t('plugins.saveConfig') }}
-          </button>
+    <Dialog :open="showConfigDialog" @update:open="closeConfig">
+      <DialogContent class="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>
+            {{ $t('plugins.configuration') }}: {{ selectedPlugin?.name }}
+          </DialogTitle>
+          <DialogDescription>
+            {{ selectedPlugin?.description }}
+          </DialogDescription>
+        </DialogHeader>
+
+        <!-- Current Options -->
+        <div v-if="selectedPlugin" class="space-y-4">
+          <div v-if="Object.keys(selectedPlugin.options).length > 0">
+            <h4 class="mb-2 text-sm font-medium">Current Values</h4>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Option</TableHead>
+                  <TableHead>Value</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow v-for="(value, key) in selectedPlugin.options" :key="String(key)">
+                  <TableCell class="font-mono text-sm">{{ key }}</TableCell>
+                  <TableCell class="text-sm">{{ JSON.stringify(value) }}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+
+          <!-- Options Spec -->
+          <div v-if="selectedPlugin.optionsSpec.length > 0">
+            <h4 class="mb-2 text-sm font-medium">Options Schema</h4>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Required</TableHead>
+                  <TableHead>Default</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow v-for="spec in selectedPlugin.optionsSpec" :key="spec.name">
+                  <TableCell>
+                    <div>
+                      <span class="font-mono text-sm">{{ spec.name }}</span>
+                      <p class="text-xs text-muted-foreground">{{ spec.description }}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" class="text-xs">{{ spec.type }}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge :variant="spec.required ? 'destructive' : 'outline'" class="text-xs">
+                      {{ spec.required ? 'required' : 'optional' }}
+                    </Badge>
+                  </TableCell>
+                  <TableCell class="text-sm">{{ JSON.stringify(spec.default) }}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+
+          <div v-if="selectedPlugin.optionsSpec.length === 0 && Object.keys(selectedPlugin.options).length === 0">
+            <p class="text-sm text-muted-foreground">This plugin has no configurable options.</p>
+          </div>
         </div>
-      </div>
-    </div>
+
+        <DialogFooter>
+          <Button variant="outline" @click="closeConfig">{{ $t('general.cancel') }}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>

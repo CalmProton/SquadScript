@@ -35,9 +35,12 @@
   "nav": {
     "dashboard": "Панель",
     "players": "Гравці",
+    "teams": "Команди та загони",
     "logs": "Логи",
     "plugins": "Плагіни",
     "rcon": "RCON Консоль",
+    "notifications": "Сповіщення",
+    "users": "Користувачі",
     "settings": "Налаштування"
   },
   "dashboard": {
@@ -73,7 +76,8 @@
     "messageContent": "Текст повідомлення",
     "flagName": "Назва прапорця",
     "flagValue": "Значення прапорця",
-    "noPlayers": "Немає гравців онлайн"
+    "noPlayers": "Немає гравців онлайн",
+    "searchPlaceholder": "Пошук гравців..."
   },
   "logs": {
     "title": "Логи сервера",
@@ -87,7 +91,8 @@
     "kills": "Вбивства",
     "adminActions": "Дії адміністратора",
     "serverEvents": "Події сервера",
-    "noLogs": "Немає логів для відображення"
+    "noLogs": "Немає логів для відображення",
+    "filterByPlayer": "Фільтр за гравцем..."
   },
   "plugins": {
     "title": "Плагіни",

@@ -17,6 +17,7 @@ export class EventLogRepository {
   async insert(data: {
     type: string;
     message: string;
+    serverId?: string | null;
     player?: string | null;
     playerEos?: string | null;
     details?: Record<string, unknown> | null;
@@ -24,6 +25,7 @@ export class EventLogRepository {
     const results = await this.db.insert(eventLog).values({
       type: data.type,
       message: data.message,
+      serverId: data.serverId ?? null,
       player: data.player ?? null,
       playerEos: data.playerEos ?? null,
       details: data.details ?? null,

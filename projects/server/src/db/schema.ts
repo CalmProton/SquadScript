@@ -56,6 +56,7 @@ export const roles = pgTable('roles', {
  */
 export const auditLog = pgTable('audit_log', {
   id: serial('id').primaryKey(),
+  serverId: text('server_id'),
   userId: text('user_id').references(() => users.id),
   action: text('action').notNull(),
   target: text('target'),
@@ -64,6 +65,7 @@ export const auditLog = pgTable('audit_log', {
 }, (table) => [
   index('idx_audit_log_created_at').on(table.createdAt),
   index('idx_audit_log_action').on(table.action),
+  index('idx_audit_log_server_id').on(table.serverId),
 ]);
 
 // =============================================================================
@@ -75,6 +77,7 @@ export const auditLog = pgTable('audit_log', {
  */
 export const banHistory = pgTable('ban_history', {
   id: serial('id').primaryKey(),
+  serverId: text('server_id'),
   steamId: text('steam_id'),
   eosId: text('eos_id'),
   name: text('name'),
@@ -87,6 +90,7 @@ export const banHistory = pgTable('ban_history', {
 }, (table) => [
   index('idx_ban_history_steam_id').on(table.steamId),
   index('idx_ban_history_eos_id').on(table.eosId),
+  index('idx_ban_history_server_id').on(table.serverId),
 ]);
 
 // =============================================================================
@@ -98,6 +102,7 @@ export const banHistory = pgTable('ban_history', {
  */
 export const metricsHistory = pgTable('metrics_history', {
   id: serial('id').primaryKey(),
+  serverId: text('server_id'),
   playerCount: integer('player_count').notNull(),
   tickRate: real('tick_rate'),
   cpuPercent: real('cpu_percent'),
@@ -107,6 +112,7 @@ export const metricsHistory = pgTable('metrics_history', {
   sampledAt: timestamp('sampled_at').notNull().defaultNow(),
 }, (table) => [
   index('idx_metrics_sampled_at').on(table.sampledAt),
+  index('idx_metrics_server_id').on(table.serverId),
 ]);
 
 // =============================================================================
@@ -118,6 +124,7 @@ export const metricsHistory = pgTable('metrics_history', {
  */
 export const pluginState = pgTable('plugin_state', {
   pluginName: text('plugin_name').primaryKey(),
+  serverId: text('server_id'),
   enabled: boolean('enabled').notNull().default(true),
   options: jsonb('options'),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -132,6 +139,7 @@ export const pluginState = pgTable('plugin_state', {
  */
 export const notifications = pgTable('notifications', {
   id: serial('id').primaryKey(),
+  serverId: text('server_id'),
   type: text('type').notNull(),
   severity: text('severity').notNull().default('info'),
   title: text('title').notNull(),
@@ -140,6 +148,7 @@ export const notifications = pgTable('notifications', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => [
   index('idx_notifications_read').on(table.read),
+  index('idx_notifications_server_id').on(table.serverId),
 ]);
 
 // =============================================================================
@@ -151,6 +160,7 @@ export const notifications = pgTable('notifications', {
  */
 export const eventLog = pgTable('event_log', {
   id: serial('id').primaryKey(),
+  serverId: text('server_id'),
   type: text('type').notNull(),
   message: text('message').notNull(),
   player: text('player'),
@@ -161,4 +171,5 @@ export const eventLog = pgTable('event_log', {
   index('idx_event_log_type').on(table.type),
   index('idx_event_log_created_at').on(table.createdAt),
   index('idx_event_log_player_eos').on(table.playerEos),
+  index('idx_event_log_server_id').on(table.serverId),
 ]);

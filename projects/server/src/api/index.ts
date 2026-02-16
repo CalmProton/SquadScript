@@ -13,6 +13,7 @@ import { openapi } from '@elysiajs/openapi';
 import type { SquadServer } from '../server.js';
 import type { DrizzleDB } from '../db/index.js';
 import type { MetricsCollector } from '../metrics/collector.js';
+import type { PluginManager } from '../plugins/manager.js';
 
 import { corsPlugin } from './plugins/cors.js';
 import { createAuthModule } from './modules/auth/index.js';
@@ -35,12 +36,14 @@ import { createWsHandler } from './websocket/handler.js';
  * @param squadServer - The running SquadServer instance
  * @param db - Drizzle database instance
  * @param metricsCollector - Metrics collector instance
+ * @param pluginManager - Plugin manager instance (optional)
  * @returns Configured Elysia app (call `.listen(port)` to start)
  */
 export function createApi(
   squadServer: SquadServer,
   db: DrizzleDB,
   metricsCollector: MetricsCollector,
+  pluginManager: PluginManager | null = null,
 ) {
   return new Elysia({ prefix: '/api' })
     .use(corsPlugin)
@@ -60,7 +63,7 @@ export function createApi(
     .use(createSquadsModule(squadServer, db))
     .use(createRconModule(squadServer, db))
     .use(createLayersModule(squadServer, db))
-    .use(createPluginsModule(squadServer))
+    .use(createPluginsModule(pluginManager))
     .use(createConfigModule())
     .use(createLogsModule(db))
     .use(createUsersModule(db))

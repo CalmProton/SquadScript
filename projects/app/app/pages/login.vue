@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { useAuthStore } from '~/stores/auth';
+
 const { loggedIn, fetch: fetchSession } = useUserSession();
+const authStore = useAuthStore();
 
 definePageMeta({
   layout: 'auth',
 });
 
-const { $t } = useNuxtApp();
+const { $t, $ts } = useNuxtApp();
 const router = useRouter();
 
 const username = ref('');
@@ -25,17 +28,30 @@ async function handleLogin() {
   loading.value = true;
 
   try {
-    await $fetch('/api/auth/login', {
+    const response = await $fetch<{
+      success: boolean;
+      token: string;
+      expiresAt: string;
+      user: { id: string; username: string; role: string; createdAt: string };
+    }>('/api/auth/login', {
       method: 'POST',
       body: {
         username: username.value,
         password: password.value,
       },
     });
+
+    // Populate the Pinia auth store with JWT token for WebSocket & direct API use
+    authStore.setAuth({
+      token: response.token,
+      expiresAt: response.expiresAt,
+      user: response.user,
+    });
+
     await fetchSession();
     await navigateTo('/', { replace: true });
   } catch (e: unknown) {
-    error.value = $t('auth.invalidCredentials');
+    error.value = $ts('auth.invalidCredentials');
   } finally {
     loading.value = false;
   }
@@ -58,7 +74,7 @@ async function handleLogin() {
           id="username"
           v-model="username"
           type="text"
-          :placeholder="$t('auth.enterUsername')"
+          :placeholder="$ts('auth.enterUsername')"
           class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           required
         />
@@ -72,7 +88,7 @@ async function handleLogin() {
           id="password"
           v-model="password"
           type="password"
-          :placeholder="$t('auth.enterPassword')"
+          :placeholder="$ts('auth.enterPassword')"
           class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           required
         />

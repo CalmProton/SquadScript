@@ -27,8 +27,8 @@ export const usePluginsStore = defineStore('plugins', () => {
     loading.value = true;
     try {
       const api = useApi();
-      const result = await api.get<PluginDTO[]>('/plugins');
-      plugins.value = result;
+      const result = await api.get<{ plugins: PluginDTO[] }>('/plugins');
+      plugins.value = result.plugins;
     } finally {
       loading.value = false;
     }

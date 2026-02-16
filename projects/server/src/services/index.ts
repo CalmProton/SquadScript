@@ -26,3 +26,7 @@ export {
   AdminService,
   type AdminServiceOptions,
 } from './admin.service.js';
+
+export { EventLogService } from './event-log.service.js';
+
+export { NotificationService } from './notification.service.js';

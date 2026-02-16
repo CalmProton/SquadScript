@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { PlayerDTO, PaginatedResponse } from '@squadscript/types/api';
+import type { PlayerDTO } from '@squadscript/types/api';
 
 /**
  * Players store.
@@ -44,8 +44,8 @@ export const usePlayersStore = defineStore('players', () => {
     loading.value = true;
     try {
       const api = useApi();
-      const result = await api.get<PaginatedResponse<PlayerDTO>>('/players');
-      players.value = [...result.data];
+      const result = await api.get<PlayerDTO[]>('/players');
+      players.value = [...result];
     } finally {
       loading.value = false;
     }

@@ -18,6 +18,8 @@ import { createApi } from './api/index.js';
 import { MetricsCollector } from './metrics/collector.js';
 import { setupBroadcaster } from './api/websocket/broadcaster.js';
 import { AuthService } from './api/modules/auth/service.js';
+import { EventLogService } from './services/event-log.service.js';
+import { NotificationService } from './services/notification.service.js';
 
 const DEFAULT_CONFIG_PATH = '/app/config.json';
 const DEFAULT_RETRY_MS = 5000;
@@ -313,6 +315,16 @@ async function main(): Promise<void> {
     // 5. Set up WebSocket event broadcaster
     setupBroadcaster(server!, metricsCollector);
     log.info('WebSocket broadcaster initialized');
+
+    // 6. Start event log persistence
+    const eventLogService = new EventLogService(server!, db, serverOptions.id);
+    eventLogService.start();
+    log.info('Event log service started');
+
+    // 7. Start notification service
+    const notificationService = new NotificationService(server!, db, serverOptions.id);
+    notificationService.start();
+    log.info('Notification service started');
   } catch (apiError) {
     log.error(`Failed to start API server (non-fatal): ${apiError instanceof Error ? apiError.message : String(apiError)}`);
   }

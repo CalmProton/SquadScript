@@ -2,15 +2,15 @@
  * API client composable for making requests to the SquadScript server API.
  *
  * Wraps $fetch with:
- * - Base URL configuration (from runtime config)
- * - JWT token injection from auth state
+ * - Base URL configuration (proxied through Nuxt server)
  * - Automatic error handling (401 → redirect to login)
  * - Type-safe request/response generics
+ *
+ * Note: The JWT token is injected server-side by the proxy route
+ * from the secure session. Client-side requests go through /api/proxy/.
  */
 
 interface ApiOptions {
-  /** Override the auth token (otherwise pulled from session/cookie). */
-  token?: string;
   /** Skip redirect on 401 errors. */
   skipAuthRedirect?: boolean;
 }
@@ -22,24 +22,15 @@ export function useApi(options: ApiOptions = {}) {
   const baseUrl = '/api/proxy';
 
   /**
-   * Internal fetch wrapper with auth and error handling.
+   * Internal fetch wrapper with error handling.
    */
   async function apiFetch<T>(
     path: string,
     fetchOptions: Parameters<typeof $fetch>[1] = {},
   ): Promise<T> {
-    const headers: Record<string, string> = {
-      ...(fetchOptions.headers as Record<string, string> ?? {}),
-    };
-
-    if (options.token) {
-      headers.Authorization = `Bearer ${options.token}`;
-    }
-
     try {
       return await $fetch<T>(`${baseUrl}${path}`, {
         ...fetchOptions,
-        headers,
       });
     } catch (error: unknown) {
       // Handle 401 by redirecting to login
@@ -66,21 +57,21 @@ export function useApi(options: ApiOptions = {}) {
     /**
      * POST request.
      */
-    post<T>(path: string, body?: unknown) {
+    post<T>(path: string, body?: Record<string, any> | null) {
       return apiFetch<T>(path, { method: 'POST', body });
     },
 
     /**
      * PUT request.
      */
-    put<T>(path: string, body?: unknown) {
+    put<T>(path: string, body?: Record<string, any> | null) {
       return apiFetch<T>(path, { method: 'PUT', body });
     },
 
     /**
      * PATCH request.
      */
-    patch<T>(path: string, body?: unknown) {
+    patch<T>(path: string, body?: Record<string, any> | null) {
       return apiFetch<T>(path, { method: 'PATCH', body });
     },
 

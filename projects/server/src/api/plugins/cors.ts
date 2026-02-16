@@ -10,7 +10,7 @@ import { cors } from '@elysiajs/cors';
 
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS ?? 'http://localhost:3000').split(',');
 
-export const corsPlugin = cors({
+export const corsPlugin: ReturnType<typeof cors> = cors({
   origin: ALLOWED_ORIGINS,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

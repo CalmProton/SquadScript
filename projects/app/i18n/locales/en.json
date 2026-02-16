@@ -35,9 +35,12 @@
   "nav": {
     "dashboard": "Dashboard",
     "players": "Players",
+    "teams": "Teams & Squads",
     "logs": "Logs",
     "plugins": "Plugins",
     "rcon": "RCON Console",
+    "notifications": "Notifications",
+    "users": "Users",
     "settings": "Settings"
   },
   "dashboard": {
@@ -73,7 +76,8 @@
     "messageContent": "Message Content",
     "flagName": "Flag Name",
     "flagValue": "Flag Value",
-    "noPlayers": "No players online"
+    "noPlayers": "No players online",
+    "searchPlaceholder": "Search players..."
   },
   "logs": {
     "title": "Server Logs",
@@ -87,7 +91,8 @@
     "kills": "Kills",
     "adminActions": "Admin Actions",
     "serverEvents": "Server Events",
-    "noLogs": "No logs to display"
+    "noLogs": "No logs to display",
+    "filterByPlayer": "Filter by player..."
   },
   "plugins": {
     "title": "Plugins",

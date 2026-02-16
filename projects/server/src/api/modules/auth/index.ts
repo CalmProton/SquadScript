@@ -16,7 +16,8 @@ import { authGuard, checkAuth } from '../../plugins/auth.js';
 export function createAuthModule(db: DrizzleDB) {
   return new Elysia({ prefix: '/auth' })
     .post('/login', async ({ body, set }) => {
-      const result = await AuthService.authenticate(db, body.username, body.password);
+      const { username, password } = body as { username: string; password: string };
+      const result = await AuthService.authenticate(db, username, password);
 
       if (!result) {
         set.status = 401;

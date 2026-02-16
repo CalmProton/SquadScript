@@ -2,9 +2,7 @@
  * Catch-all proxy: /api/proxy/** → SquadScript server API /**
  *
  * Proxies all requests from the Nuxt app to the SquadScript server API.
- * This avoids CORS issues and keeps the SquadScript API URL server-side only.
- *
- * The Authorization header is forwarded as-is from the client request.
+ * Injects the JWT token from the secure session into the Authorization header.
  */
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
@@ -15,6 +13,15 @@ export default defineEventHandler(async (event) => {
 
   // Build the target URL
   const targetUrl = `${apiUrl}/api${path}`;
+
+  // Inject JWT token from secure session
+  const session = await getUserSession(event);
+  const apiToken = session.secure?.apiToken;
+
+  if (apiToken) {
+    // Set the Authorization header for the upstream request
+    event.node.req.headers.authorization = `Bearer ${apiToken}`;
+  }
 
   // Forward the request
   try {

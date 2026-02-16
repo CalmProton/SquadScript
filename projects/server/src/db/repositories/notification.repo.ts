@@ -18,12 +18,14 @@ export class NotificationRepository {
     type: string;
     severity: string;
     title: string;
+    serverId?: string | null;
     message?: string | null;
   }) {
     const results = await this.db.insert(notifications).values({
       type: data.type,
       severity: data.severity,
       title: data.title,
+      serverId: data.serverId ?? null,
       message: data.message ?? null,
     }).returning();
     return results[0]!;

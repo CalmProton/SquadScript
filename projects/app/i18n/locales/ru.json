@@ -35,9 +35,12 @@
   "nav": {
     "dashboard": "Панель",
     "players": "Игроки",
+    "teams": "Команды и отряды",
     "logs": "Логи",
     "plugins": "Плагины",
     "rcon": "RCON Консоль",
+    "notifications": "Уведомления",
+    "users": "Пользователи",
     "settings": "Настройки"
   },
   "dashboard": {
@@ -73,7 +76,8 @@
     "messageContent": "Текст сообщения",
     "flagName": "Имя флага",
     "flagValue": "Значение флага",
-    "noPlayers": "Нет игроков онлайн"
+    "noPlayers": "Нет игроков онлайн",
+    "searchPlaceholder": "Поиск игроков..."
   },
   "logs": {
     "title": "Логи сервера",
@@ -87,7 +91,8 @@
     "kills": "Убийства",
     "adminActions": "Действия администратора",
     "serverEvents": "События сервера",
-    "noLogs": "Нет логов для отображения"
+    "noLogs": "Нет логов для отображения",
+    "filterByPlayer": "Фильтр по игроку..."
   },
   "plugins": {
     "title": "Плагины",

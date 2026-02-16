@@ -22,7 +22,8 @@ export type WSChannel =
   | 'rcon'
   | 'metrics'
   | 'plugins'
-  | 'logs';
+  | 'logs'
+  | 'notifications';
 
 // =============================================================================
 // Client → Server Messages

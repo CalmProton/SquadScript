@@ -11,7 +11,10 @@ declare module '#auth-utils' {
   }
 
   interface SecureSessionData {
-    // Add your own fields if needed
+    /** JWT token from the SquadScript server API. */
+    apiToken?: string;
+    /** Token expiry timestamp (ISO string). */
+    apiTokenExpiresAt?: string;
   }
 }
 
