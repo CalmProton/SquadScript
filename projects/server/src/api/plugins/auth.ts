@@ -2,6 +2,7 @@
  * @squadscript/server
  *
  * Auth guard plugin for ElysiaJS — resolves JWT user via derive().
+ * Uses @elysiajs/bearer to extract the Bearer token from the Authorization header.
  *
  * Usage: `.use(authGuard)` adds `user: JWTPayload | null` to handler context.
  *
@@ -9,6 +10,7 @@
  */
 
 import { Elysia } from 'elysia';
+import { bearer } from '@elysiajs/bearer';
 
 import { AuthService, type JWTPayload } from '../modules/auth/service.js';
 
@@ -20,10 +22,8 @@ import { AuthService, type JWTPayload } from '../modules/auth/service.js';
  * `user` property through `.use(authGuard)` chains.
  */
 export const authGuard = (app: Elysia) =>
-  app.derive(({ headers }) => {
-    const authHeader = headers.authorization;
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-    const user: JWTPayload | null = token ? AuthService.verifyJWT(token) : null;
+  app.use(bearer()).derive(({ bearer }) => {
+    const user: JWTPayload | null = bearer ? AuthService.verifyJWT(bearer) : null;
     return { user };
   });
 

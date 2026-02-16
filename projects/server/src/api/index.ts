@@ -7,6 +7,8 @@
  */
 
 import { Elysia } from 'elysia';
+import { serverTiming } from '@elysiajs/server-timing';
+import { openapi } from '@elysiajs/openapi';
 
 import type { SquadServer } from '../server.js';
 import type { DrizzleDB } from '../db/index.js';
@@ -42,6 +44,16 @@ export function createApi(
 ) {
   return new Elysia({ prefix: '/api' })
     .use(corsPlugin)
+    .use(serverTiming())
+    .use(openapi({
+      documentation: {
+        info: {
+          title: 'SquadScript API',
+          version: '0.1.0',
+          description: 'SquadScript server management API',
+        },
+      },
+    }))
     .use(createAuthModule(db))
     .use(createStatusModule(squadServer, metricsCollector))
     .use(createPlayersModule(squadServer, db))
