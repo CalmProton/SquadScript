@@ -48,11 +48,29 @@
     "serverStatus": "Статус сервера",
     "online": "Онлайн",
     "offline": "Офлайн",
+    "starting": "Запуск",
+    "stopping": "Остановка",
     "players": "Игроков",
     "currentMap": "Текущая карта",
     "nextMap": "Следующая карта",
     "uptime": "Время работы",
-    "quickActions": "Быстрые действия"
+    "quickActions": "Быстрые действия",
+    "queueLabel": "Очередь: {public} обычная, {reserve} резерв",
+    "unknownMap": "Неизвестно",
+    "nextMapLabel": "Следующая: {map}",
+    "rconConnected": "RCON подключён",
+    "rconDisconnected": "RCON отключён",
+    "time": {
+      "hourShort": "ч",
+      "minuteShort": "м"
+    },
+    "metrics": {
+      "tickRate": "Тикрейт",
+      "cpu": "ЦП",
+      "memory": "Память",
+      "hz": "Гц",
+      "mb": "МБ"
+    }
   },
   "players": {
     "title": "Игроки",
@@ -77,7 +95,29 @@
     "flagName": "Имя флага",
     "flagValue": "Значение флага",
     "noPlayers": "Нет игроков онлайн",
-    "searchPlaceholder": "Поиск игроков..."
+    "searchPlaceholder": "Поиск игроков...",
+    "teamOne": "Команда 1",
+    "teamTwo": "Команда 2",
+    "unassigned": "Без отряда",
+    "onlineCount": "{count} онлайн",
+    "banDurations": {
+      "oneHour": "1 час",
+      "oneDay": "1 день",
+      "sevenDays": "7 дней",
+      "thirtyDays": "30 дней",
+      "permanent": "Навсегда"
+    }
+  },
+  "teams": {
+    "title": "Команды и отряды",
+    "teamOne": "Команда 1",
+    "teamTwo": "Команда 2",
+    "locked": "Закрыт",
+    "squadLeader": "КЛ: {name}",
+    "unassignedCount": "Без отряда ({count})",
+    "squadCount": "Отрядов: {count}",
+    "playerCount": "Игроков: {count}",
+    "noSquads": "Нет отрядов"
   },
   "logs": {
     "title": "Логи сервера",
@@ -92,7 +132,10 @@
     "adminActions": "Действия администратора",
     "serverEvents": "События сервера",
     "noLogs": "Нет логов для отображения",
-    "filterByPlayer": "Фильтр по игроку..."
+    "filterByPlayer": "Фильтр по игроку...",
+    "entriesCount": "Записей: {count}",
+    "sourcePlayer": "Игрок",
+    "loadMore": "Загрузить ещё ({shown}/{total})"
   },
   "plugins": {
     "title": "Плагины",
@@ -106,7 +149,19 @@
     "reload": "Перезагрузить",
     "noPlugins": "Нет установленных плагинов",
     "configuration": "Настройка плагина",
-    "saveConfig": "Сохранить настройки"
+    "saveConfig": "Сохранить настройки",
+    "enabledCount": "Включено: {count}",
+    "totalCount": "Всего: {count}",
+    "optionCount": "Опций: {count}",
+    "currentValues": "Текущие значения",
+    "option": "Опция",
+    "value": "Значение",
+    "optionsSchema": "Схема опций",
+    "type": "Тип",
+    "required": "Обязательно",
+    "optional": "Необязательно",
+    "default": "По умолчанию",
+    "noConfigurableOptions": "У этого плагина нет настраиваемых опций."
   },
   "rcon": {
     "title": "RCON Консоль",
@@ -115,7 +170,38 @@
     "history": "История команд",
     "response": "Ответ",
     "clearHistory": "Очистить историю",
-    "placeholder": "Введите RCON команду..."
+    "placeholder": "Введите RCON команду...",
+    "broadcast": "Оповещение",
+    "noCommands": "Команды ещё не выполнялись",
+    "ok": "OK",
+    "error": "Ошибка",
+    "serverBroadcast": "Оповещение сервера",
+    "broadcastPlaceholder": "Введите текст оповещения...",
+    "sendBroadcast": "Отправить"
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "unreadCount": "Непрочитано: {count}",
+    "markAllAsRead": "Отметить все как прочитанные",
+    "new": "новое",
+    "markRead": "Отметить прочитанным",
+    "noNotifications": "Уведомлений пока нет"
+  },
+  "users": {
+    "title": "Управление пользователями",
+    "createUser": "Создать пользователя",
+    "username": "Имя пользователя",
+    "role": "Роль",
+    "created": "Создан",
+    "actions": "Действия",
+    "noUsers": "Пользователи не найдены",
+    "password": "Пароль",
+    "create": "Создать",
+    "editUserTitle": "Редактировать пользователя: {username}",
+    "newPasswordHint": "Новый пароль (оставьте пустым, чтобы не менять)",
+    "saveChanges": "Сохранить изменения",
+    "deleteUser": "Удалить пользователя",
+    "deleteConfirmation": "Вы уверены, что хотите удалить {username}? Это действие нельзя отменить."
   },
   "settings": {
     "title": "Настройки",
@@ -124,6 +210,28 @@
     "light": "Светлая",
     "dark": "Тёмная",
     "system": "Системная",
-    "saveSettings": "Сохранить настройки"
+    "saveSettings": "Сохранить настройки",
+    "tabs": {
+      "general": "Общие",
+      "serverConfig": "Конфиг сервера",
+      "mapRotation": "Ротация карт"
+    },
+    "locales": {
+      "en": "English",
+      "ru": "Русский",
+      "uk": "Українська"
+    },
+    "config": {
+      "serverCfgTitle": "Server.cfg",
+      "serverCfgDescription": "Редактирование конфигурации сервера (формат key=value, по одной строке).",
+      "saveServerConfig": "Сохранить конфиг сервера",
+      "mapRotationTitle": "MapRotation.cfg",
+      "mapRotationDescription": "По одному слою на строку. Порядок определяет последовательность ротации.",
+      "saveMapRotation": "Сохранить ротацию карт",
+      "serverSaved": "Конфигурация сервера сохранена.",
+      "serverSaveFailed": "Не удалось сохранить конфигурацию.",
+      "rotationSaved": "Ротация карт сохранена.",
+      "rotationSaveFailed": "Не удалось сохранить ротацию карт."
+    }
   }
 }

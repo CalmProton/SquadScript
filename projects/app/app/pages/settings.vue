@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
 import { Button } from '~/components/ui/button';
-import { Label } from '~/components/ui/label';
 import { Textarea } from '~/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import {
@@ -19,8 +18,20 @@ const { canEditConfig } = usePermissions();
 const api = useApi();
 
 const currentLocale = ref('en');
-const theme = ref('system');
 const { defaultLocale } = useI18n();
+
+function getDefaultLocale(): string {
+  if (typeof defaultLocale === 'function') {
+    return defaultLocale() || 'en';
+  }
+
+  if (typeof defaultLocale === 'object' && defaultLocale && 'value' in defaultLocale) {
+    const localeRef = defaultLocale as { value?: string };
+    return localeRef.value || 'en';
+  }
+
+  return 'en';
+}
 
 // Server config
 const serverCfg = ref<Record<string, string>>({});
@@ -32,7 +43,7 @@ const configSaving = ref(false);
 const configMessage = ref<{ type: 'success' | 'error'; text: string } | null>(null);
 
 onMounted(() => {
-  currentLocale.value = defaultLocale.value || 'en';
+  currentLocale.value = getDefaultLocale();
   if (canEditConfig.value) {
     loadServerConfig();
     loadMapRotation();
@@ -40,6 +51,11 @@ onMounted(() => {
 });
 
 function changeLanguage(locale: string) {
+  if (locale === getDefaultLocale()) {
+    navigateTo('/settings');
+    return;
+  }
+
   navigateTo(`/${locale}/settings`);
 }
 
@@ -83,9 +99,9 @@ async function saveServerConfig() {
     }
     await api.put('/config/server', config);
     serverCfg.value = config;
-    configMessage.value = { type: 'success', text: 'Server configuration saved.' };
+    configMessage.value = { type: 'success', text: $t('settings.config.serverSaved') };
   } catch {
-    configMessage.value = { type: 'error', text: 'Failed to save configuration.' };
+    configMessage.value = { type: 'error', text: $t('settings.config.serverSaveFailed') };
   } finally {
     configSaving.value = false;
   }
@@ -101,9 +117,9 @@ async function saveMapRotation() {
       .filter(Boolean);
     await api.put('/config/rotation', layers);
     mapRotation.value = layers;
-    configMessage.value = { type: 'success', text: 'Map rotation saved.' };
+    configMessage.value = { type: 'success', text: $t('settings.config.rotationSaved') };
   } catch {
-    configMessage.value = { type: 'error', text: 'Failed to save map rotation.' };
+    configMessage.value = { type: 'error', text: $t('settings.config.rotationSaveFailed') };
   } finally {
     configSaving.value = false;
   }
@@ -116,9 +132,9 @@ async function saveMapRotation() {
 
     <Tabs default-value="general" class="w-full">
       <TabsList>
-        <TabsTrigger value="general">General</TabsTrigger>
-        <TabsTrigger v-if="canEditConfig" value="server-config">Server Config</TabsTrigger>
-        <TabsTrigger v-if="canEditConfig" value="map-rotation">Map Rotation</TabsTrigger>
+        <TabsTrigger value="general">{{ $t('settings.tabs.general') }}</TabsTrigger>
+        <TabsTrigger v-if="canEditConfig" value="server-config">{{ $t('settings.tabs.serverConfig') }}</TabsTrigger>
+        <TabsTrigger v-if="canEditConfig" value="map-rotation">{{ $t('settings.tabs.mapRotation') }}</TabsTrigger>
       </TabsList>
 
       <!-- General Settings -->
@@ -133,35 +149,14 @@ async function saveMapRotation() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="ru">Русский</SelectItem>
-                <SelectItem value="uk">Українська</SelectItem>
+                <SelectItem value="en">{{ $t('settings.locales.en') }}</SelectItem>
+                <SelectItem value="ru">{{ $t('settings.locales.ru') }}</SelectItem>
+                <SelectItem value="uk">{{ $t('settings.locales.uk') }}</SelectItem>
               </SelectContent>
             </Select>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{{ $t('settings.theme') }}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div class="flex gap-4">
-              <label class="flex items-center gap-2">
-                <input v-model="theme" type="radio" value="light" class="h-4 w-4" />
-                <span>{{ $t('settings.light') }}</span>
-              </label>
-              <label class="flex items-center gap-2">
-                <input v-model="theme" type="radio" value="dark" class="h-4 w-4" />
-                <span>{{ $t('settings.dark') }}</span>
-              </label>
-              <label class="flex items-center gap-2">
-                <input v-model="theme" type="radio" value="system" class="h-4 w-4" />
-                <span>{{ $t('settings.system') }}</span>
-              </label>
-            </div>
-          </CardContent>
-        </Card>
       </TabsContent>
 
       <!-- Server Config Tab -->
@@ -174,9 +169,9 @@ async function saveMapRotation() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Server.cfg</CardTitle>
+            <CardTitle>{{ $t('settings.config.serverCfgTitle') }}</CardTitle>
             <CardDescription>
-              Edit server configuration (key=value format, one per line).
+              {{ $t('settings.config.serverCfgDescription') }}
             </CardDescription>
           </CardHeader>
           <CardContent class="space-y-4">
@@ -187,7 +182,7 @@ async function saveMapRotation() {
               :disabled="configLoading"
             />
             <Button :disabled="configSaving" @click="saveServerConfig">
-              Save Server Config
+              {{ $t('settings.config.saveServerConfig') }}
             </Button>
           </CardContent>
         </Card>
@@ -203,9 +198,9 @@ async function saveMapRotation() {
 
         <Card>
           <CardHeader>
-            <CardTitle>MapRotation.cfg</CardTitle>
+            <CardTitle>{{ $t('settings.config.mapRotationTitle') }}</CardTitle>
             <CardDescription>
-              One layer per line. Order determines rotation sequence.
+              {{ $t('settings.config.mapRotationDescription') }}
             </CardDescription>
           </CardHeader>
           <CardContent class="space-y-4">
@@ -216,7 +211,7 @@ async function saveMapRotation() {
               :disabled="configLoading"
             />
             <Button :disabled="configSaving" @click="saveMapRotation">
-              Save Map Rotation
+              {{ $t('settings.config.saveMapRotation') }}
             </Button>
           </CardContent>
         </Card>

@@ -52,10 +52,10 @@ function squadKey(squad: SquadDTO): string {
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-3xl font-bold">Teams &amp; Squads</h1>
+      <h1 class="text-3xl font-bold">{{ $t('teams.title') }}</h1>
       <div class="flex items-center gap-2">
-        <Badge variant="outline">{{ squadsStore.squads.length }} squads</Badge>
-        <Badge variant="outline">{{ playersStore.playerCount }} players</Badge>
+        <Badge variant="outline">{{ $t('teams.squadCount', { count: squadsStore.squads.length }) }}</Badge>
+        <Badge variant="outline">{{ $t('teams.playerCount', { count: playersStore.playerCount }) }}</Badge>
       </div>
     </div>
 
@@ -64,8 +64,8 @@ function squadKey(squad: SquadDTO): string {
       <Card>
         <CardHeader>
           <CardTitle class="flex items-center justify-between">
-            <span>Team 1</span>
-            <Badge variant="default">{{ squadsStore.teamOne.length }} squads</Badge>
+            <span>{{ $t('teams.teamOne') }}</span>
+            <Badge variant="default">{{ $t('teams.squadCount', { count: squadsStore.teamOne.length }) }}</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent class="space-y-3">
@@ -82,9 +82,9 @@ function squadKey(squad: SquadDTO): string {
               <div class="flex items-center gap-2">
                 <span class="font-medium">{{ squad.name }}</span>
                 <Badge variant="outline" class="text-xs">{{ getSquadPlayers(squad).length }}/{{ squad.size }}</Badge>
-                <Badge v-if="squad.locked" variant="destructive" class="text-xs">Locked</Badge>
+                <Badge v-if="squad.locked" variant="destructive" class="text-xs">{{ $t('teams.locked') }}</Badge>
               </div>
-              <span class="text-xs text-muted-foreground">SL: {{ squad.creatorName }}</span>
+              <span class="text-xs text-muted-foreground">{{ $t('teams.squadLeader', { name: squad.creatorName }) }}</span>
             </button>
 
             <div v-if="expandedSquads.has(squadKey(squad))">
@@ -105,7 +105,7 @@ function squadKey(squad: SquadDTO): string {
           <!-- Unassigned -->
           <div v-if="getUnassignedPlayers(1).length > 0" class="rounded-lg border border-dashed">
             <div class="p-3 text-sm text-muted-foreground">
-              Unassigned ({{ getUnassignedPlayers(1).length }})
+              {{ $t('teams.unassignedCount', { count: getUnassignedPlayers(1).length }) }}
             </div>
             <Table>
               <TableBody>
@@ -117,7 +117,7 @@ function squadKey(squad: SquadDTO): string {
           </div>
 
           <div v-if="squadsStore.teamOne.length === 0" class="py-4 text-center text-sm text-muted-foreground">
-            No squads
+            {{ $t('teams.noSquads') }}
           </div>
         </CardContent>
       </Card>
@@ -126,8 +126,8 @@ function squadKey(squad: SquadDTO): string {
       <Card>
         <CardHeader>
           <CardTitle class="flex items-center justify-between">
-            <span>Team 2</span>
-            <Badge variant="secondary">{{ squadsStore.teamTwo.length }} squads</Badge>
+            <span>{{ $t('teams.teamTwo') }}</span>
+            <Badge variant="secondary">{{ $t('teams.squadCount', { count: squadsStore.teamTwo.length }) }}</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent class="space-y-3">
@@ -143,9 +143,9 @@ function squadKey(squad: SquadDTO): string {
               <div class="flex items-center gap-2">
                 <span class="font-medium">{{ squad.name }}</span>
                 <Badge variant="outline" class="text-xs">{{ getSquadPlayers(squad).length }}/{{ squad.size }}</Badge>
-                <Badge v-if="squad.locked" variant="destructive" class="text-xs">Locked</Badge>
+                <Badge v-if="squad.locked" variant="destructive" class="text-xs">{{ $t('teams.locked') }}</Badge>
               </div>
-              <span class="text-xs text-muted-foreground">SL: {{ squad.creatorName }}</span>
+              <span class="text-xs text-muted-foreground">{{ $t('teams.squadLeader', { name: squad.creatorName }) }}</span>
             </button>
 
             <div v-if="expandedSquads.has(squadKey(squad))">
@@ -166,7 +166,7 @@ function squadKey(squad: SquadDTO): string {
           <!-- Unassigned -->
           <div v-if="getUnassignedPlayers(2).length > 0" class="rounded-lg border border-dashed">
             <div class="p-3 text-sm text-muted-foreground">
-              Unassigned ({{ getUnassignedPlayers(2).length }})
+              {{ $t('teams.unassignedCount', { count: getUnassignedPlayers(2).length }) }}
             </div>
             <Table>
               <TableBody>
@@ -178,7 +178,7 @@ function squadKey(squad: SquadDTO): string {
           </div>
 
           <div v-if="squadsStore.teamTwo.length === 0" class="py-4 text-center text-sm text-muted-foreground">
-            No squads
+            {{ $t('teams.noSquads') }}
           </div>
         </CardContent>
       </Card>

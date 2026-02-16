@@ -48,11 +48,29 @@
     "serverStatus": "Статус сервера",
     "online": "Онлайн",
     "offline": "Офлайн",
+    "starting": "Запуск",
+    "stopping": "Зупинка",
     "players": "Гравців",
     "currentMap": "Поточна карта",
     "nextMap": "Наступна карта",
     "uptime": "Час роботи",
-    "quickActions": "Швидкі дії"
+    "quickActions": "Швидкі дії",
+    "queueLabel": "Черга: {public} звичайна, {reserve} резерв",
+    "unknownMap": "Невідомо",
+    "nextMapLabel": "Наступна: {map}",
+    "rconConnected": "RCON підключено",
+    "rconDisconnected": "RCON відключено",
+    "time": {
+      "hourShort": "г",
+      "minuteShort": "хв"
+    },
+    "metrics": {
+      "tickRate": "Тікрейт",
+      "cpu": "ЦП",
+      "memory": "Пам'ять",
+      "hz": "Гц",
+      "mb": "МБ"
+    }
   },
   "players": {
     "title": "Гравці",
@@ -77,7 +95,29 @@
     "flagName": "Назва прапорця",
     "flagValue": "Значення прапорця",
     "noPlayers": "Немає гравців онлайн",
-    "searchPlaceholder": "Пошук гравців..."
+    "searchPlaceholder": "Пошук гравців...",
+    "teamOne": "Команда 1",
+    "teamTwo": "Команда 2",
+    "unassigned": "Без загону",
+    "onlineCount": "Онлайн: {count}",
+    "banDurations": {
+      "oneHour": "1 година",
+      "oneDay": "1 день",
+      "sevenDays": "7 днів",
+      "thirtyDays": "30 днів",
+      "permanent": "Назавжди"
+    }
+  },
+  "teams": {
+    "title": "Команди та загони",
+    "teamOne": "Команда 1",
+    "teamTwo": "Команда 2",
+    "locked": "Закрито",
+    "squadLeader": "КЗ: {name}",
+    "unassignedCount": "Без загону ({count})",
+    "squadCount": "Загонів: {count}",
+    "playerCount": "Гравців: {count}",
+    "noSquads": "Немає загонів"
   },
   "logs": {
     "title": "Логи сервера",
@@ -92,7 +132,10 @@
     "adminActions": "Дії адміністратора",
     "serverEvents": "Події сервера",
     "noLogs": "Немає логів для відображення",
-    "filterByPlayer": "Фільтр за гравцем..."
+    "filterByPlayer": "Фільтр за гравцем...",
+    "entriesCount": "Записів: {count}",
+    "sourcePlayer": "Гравець",
+    "loadMore": "Завантажити ще ({shown}/{total})"
   },
   "plugins": {
     "title": "Плагіни",
@@ -106,7 +149,19 @@
     "reload": "Перезавантажити",
     "noPlugins": "Немає встановлених плагінів",
     "configuration": "Налаштування плагіна",
-    "saveConfig": "Зберегти налаштування"
+    "saveConfig": "Зберегти налаштування",
+    "enabledCount": "Увімкнено: {count}",
+    "totalCount": "Усього: {count}",
+    "optionCount": "Опцій: {count}",
+    "currentValues": "Поточні значення",
+    "option": "Опція",
+    "value": "Значення",
+    "optionsSchema": "Схема опцій",
+    "type": "Тип",
+    "required": "Обов'язково",
+    "optional": "Необов'язково",
+    "default": "За замовчуванням",
+    "noConfigurableOptions": "Цей плагін не має налаштовуваних опцій."
   },
   "rcon": {
     "title": "RCON Консоль",
@@ -115,7 +170,38 @@
     "history": "Історія команд",
     "response": "Відповідь",
     "clearHistory": "Очистити історію",
-    "placeholder": "Введіть RCON команду..."
+    "placeholder": "Введіть RCON команду...",
+    "broadcast": "Оголошення",
+    "noCommands": "Команди ще не виконувались",
+    "ok": "OK",
+    "error": "Помилка",
+    "serverBroadcast": "Оголошення сервера",
+    "broadcastPlaceholder": "Введіть текст оголошення...",
+    "sendBroadcast": "Надіслати оголошення"
+  },
+  "notifications": {
+    "title": "Сповіщення",
+    "unreadCount": "Непрочитаних: {count}",
+    "markAllAsRead": "Позначити всі як прочитані",
+    "new": "нове",
+    "markRead": "Позначити прочитаним",
+    "noNotifications": "Сповіщень поки немає"
+  },
+  "users": {
+    "title": "Керування користувачами",
+    "createUser": "Створити користувача",
+    "username": "Ім'я користувача",
+    "role": "Роль",
+    "created": "Створено",
+    "actions": "Дії",
+    "noUsers": "Користувачів не знайдено",
+    "password": "Пароль",
+    "create": "Створити",
+    "editUserTitle": "Редагувати користувача: {username}",
+    "newPasswordHint": "Новий пароль (залиште порожнім, щоб не змінювати)",
+    "saveChanges": "Зберегти зміни",
+    "deleteUser": "Видалити користувача",
+    "deleteConfirmation": "Ви впевнені, що хочете видалити {username}? Цю дію не можна скасувати."
   },
   "settings": {
     "title": "Налаштування",
@@ -124,6 +210,28 @@
     "light": "Світла",
     "dark": "Темна",
     "system": "Системна",
-    "saveSettings": "Зберегти налаштування"
+    "saveSettings": "Зберегти налаштування",
+    "tabs": {
+      "general": "Загальні",
+      "serverConfig": "Конфіг сервера",
+      "mapRotation": "Ротація мап"
+    },
+    "locales": {
+      "en": "English",
+      "ru": "Русский",
+      "uk": "Українська"
+    },
+    "config": {
+      "serverCfgTitle": "Server.cfg",
+      "serverCfgDescription": "Редагування конфігурації сервера (формат key=value, по одному рядку).",
+      "saveServerConfig": "Зберегти конфіг сервера",
+      "mapRotationTitle": "MapRotation.cfg",
+      "mapRotationDescription": "По одному шару в рядку. Порядок визначає послідовність ротації.",
+      "saveMapRotation": "Зберегти ротацію мап",
+      "serverSaved": "Конфігурацію сервера збережено.",
+      "serverSaveFailed": "Не вдалося зберегти конфігурацію.",
+      "rotationSaved": "Ротацію мап збережено.",
+      "rotationSaveFailed": "Не вдалося зберегти ротацію мап."
+    }
   }
 }

@@ -16,6 +16,7 @@ import {
 } from '~/components/ui/select';
 
 const { $t } = useNuxtApp();
+const { formatDateTime } = useLocaleFormatters();
 
 definePageMeta({
   middleware: 'auth',
@@ -103,7 +104,7 @@ async function deleteUser() {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString();
+  return formatDateTime(iso, { dateStyle: 'medium' });
 }
 
 function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'outline' {
@@ -116,8 +117,8 @@ function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'outline' 
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-3xl font-bold">User Management</h1>
-      <Button @click="openCreate">Create User</Button>
+      <h1 class="text-3xl font-bold">{{ $t('users.title') }}</h1>
+      <Button @click="openCreate">{{ $t('users.createUser') }}</Button>
     </div>
 
     <!-- Users Table -->
@@ -125,10 +126,10 @@ function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'outline' 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Username</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead>{{ $t('users.username') }}</TableHead>
+            <TableHead>{{ $t('users.role') }}</TableHead>
+            <TableHead>{{ $t('users.created') }}</TableHead>
+            <TableHead>{{ $t('users.actions') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -141,17 +142,17 @@ function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'outline' 
             <TableCell>
               <div class="flex gap-1">
                 <Button size="sm" variant="outline" class="h-7 text-xs" @click="openEdit(user)">
-                  Edit
+                  {{ $t('general.edit') }}
                 </Button>
                 <Button size="sm" variant="destructive" class="h-7 text-xs" @click="openDelete(user)">
-                  Delete
+                  {{ $t('general.delete') }}
                 </Button>
               </div>
             </TableCell>
           </TableRow>
           <TableRow v-if="usersStore.users.length === 0 && !usersStore.loading">
             <TableCell colspan="4" class="py-8 text-center text-muted-foreground">
-              No users found
+              {{ $t('users.noUsers') }}
             </TableCell>
           </TableRow>
         </TableBody>
@@ -162,19 +163,19 @@ function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'outline' 
     <Dialog :open="showCreateDialog" @update:open="(v: boolean) => showCreateDialog = v">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create User</DialogTitle>
+          <DialogTitle>{{ $t('users.createUser') }}</DialogTitle>
         </DialogHeader>
         <div class="space-y-4 py-4">
           <div class="space-y-2">
-            <Label>Username</Label>
+            <Label>{{ $t('users.username') }}</Label>
             <Input v-model="newUsername" />
           </div>
           <div class="space-y-2">
-            <Label>Password</Label>
+            <Label>{{ $t('users.password') }}</Label>
             <Input v-model="newPassword" type="password" />
           </div>
           <div class="space-y-2">
-            <Label>Role</Label>
+            <Label>{{ $t('users.role') }}</Label>
             <Select v-model="newRole">
               <SelectTrigger>
                 <SelectValue />
@@ -190,7 +191,7 @@ function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'outline' 
         <DialogFooter>
           <Button variant="outline" @click="showCreateDialog = false">{{ $t('general.cancel') }}</Button>
           <Button :disabled="actionLoading || !newUsername || !newPassword" @click="createUser">
-            Create
+            {{ $t('users.create') }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -200,11 +201,11 @@ function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'outline' 
     <Dialog :open="showEditDialog" @update:open="(v: boolean) => showEditDialog = v">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit User: {{ editingUser?.username }}</DialogTitle>
+          <DialogTitle>{{ $t('users.editUserTitle', { username: editingUser?.username ?? '' }) }}</DialogTitle>
         </DialogHeader>
         <div class="space-y-4 py-4">
           <div class="space-y-2">
-            <Label>Role</Label>
+            <Label>{{ $t('users.role') }}</Label>
             <Select v-model="editRole">
               <SelectTrigger>
                 <SelectValue />
@@ -217,14 +218,14 @@ function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'outline' 
             </Select>
           </div>
           <div class="space-y-2">
-            <Label>New Password (leave blank to keep current)</Label>
+            <Label>{{ $t('users.newPasswordHint') }}</Label>
             <Input v-model="editPassword" type="password" />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" @click="showEditDialog = false">{{ $t('general.cancel') }}</Button>
           <Button :disabled="actionLoading" @click="updateUser">
-            Save Changes
+            {{ $t('users.saveChanges') }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -234,15 +235,15 @@ function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'outline' 
     <Dialog :open="showDeleteDialog" @update:open="(v: boolean) => showDeleteDialog = v">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete User</DialogTitle>
+          <DialogTitle>{{ $t('users.deleteUser') }}</DialogTitle>
         </DialogHeader>
         <p class="py-4 text-sm text-muted-foreground">
-          Are you sure you want to delete <strong>{{ editingUser?.username }}</strong>? This action cannot be undone.
+          {{ $t('users.deleteConfirmation', { username: editingUser?.username ?? '' }) }}
         </p>
         <DialogFooter>
           <Button variant="outline" @click="showDeleteDialog = false">{{ $t('general.cancel') }}</Button>
           <Button variant="destructive" :disabled="actionLoading" @click="deleteUser">
-            Delete
+            {{ $t('general.delete') }}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -12,6 +12,7 @@ import {
 import { Textarea } from '~/components/ui/textarea';
 
 const { $t } = useNuxtApp();
+const { formatDateTime } = useLocaleFormatters();
 
 definePageMeta({
   middleware: 'auth',
@@ -71,7 +72,7 @@ async function sendBroadcast() {
 }
 
 function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString();
+  return formatDateTime(iso, { timeStyle: 'medium' });
 }
 </script>
 
@@ -81,7 +82,7 @@ function formatTime(iso: string): string {
       <h1 class="text-3xl font-bold">{{ $t('rcon.title') }}</h1>
       <div class="flex items-center gap-2">
         <Button variant="outline" @click="showBroadcastDialog = true">
-          Broadcast
+          {{ $t('rcon.broadcast') }}
         </Button>
         <Button
           v-if="rconStore.history.length > 0"
@@ -120,7 +121,7 @@ function formatTime(iso: string): string {
       <Separator />
       <ScrollArea class="h-[500px]">
         <div v-if="rconStore.history.length === 0" class="px-6 py-8 text-center text-muted-foreground">
-          No commands executed yet
+          {{ $t('rcon.noCommands') }}
         </div>
 
         <div
@@ -135,7 +136,7 @@ function formatTime(iso: string): string {
                 :variant="item.success ? 'default' : 'destructive'"
                 class="text-xs"
               >
-                {{ item.success ? 'OK' : 'Error' }}
+                {{ item.success ? $t('rcon.ok') : $t('rcon.error') }}
               </Badge>
             </div>
             <span class="text-xs text-muted-foreground">{{ formatTime(item.timestamp) }}</span>
@@ -151,12 +152,12 @@ function formatTime(iso: string): string {
     <Dialog :open="showBroadcastDialog" @update:open="(v: boolean) => showBroadcastDialog = v">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Server Broadcast</DialogTitle>
+          <DialogTitle>{{ $t('rcon.serverBroadcast') }}</DialogTitle>
         </DialogHeader>
         <div class="space-y-4 py-4">
           <Textarea
             v-model="broadcastMessage"
-            placeholder="Enter broadcast message..."
+            :placeholder="$t('rcon.broadcastPlaceholder')"
             rows="3"
           />
         </div>
@@ -165,7 +166,7 @@ function formatTime(iso: string): string {
             {{ $t('general.cancel') }}
           </Button>
           <Button :disabled="!broadcastMessage.trim()" @click="sendBroadcast">
-            Send Broadcast
+            {{ $t('rcon.sendBroadcast') }}
           </Button>
         </DialogFooter>
       </DialogContent>

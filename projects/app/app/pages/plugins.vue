@@ -58,8 +58,8 @@ function getStateBadgeVariant(state: string): 'default' | 'secondary' | 'destruc
     <div class="flex items-center justify-between">
       <h1 class="text-3xl font-bold">{{ $t('plugins.title') }}</h1>
       <div class="flex items-center gap-2">
-        <Badge variant="default">{{ pluginsStore.enabledPlugins.length }} enabled</Badge>
-        <Badge variant="outline">{{ pluginsStore.plugins.length }} total</Badge>
+        <Badge variant="default">{{ $t('plugins.enabledCount', { count: pluginsStore.enabledPlugins.length }) }}</Badge>
+        <Badge variant="outline">{{ $t('plugins.totalCount', { count: pluginsStore.plugins.length }) }}</Badge>
       </div>
     </div>
 
@@ -81,7 +81,7 @@ function getStateBadgeVariant(state: string): 'default' | 'secondary' | 'destruc
           <div class="flex items-center gap-2 text-sm text-muted-foreground">
             <span>v{{ plugin.version }}</span>
             <span v-if="plugin.optionsSpec.length > 0">
-              &middot; {{ plugin.optionsSpec.length }} options
+              &middot; {{ $t('plugins.optionCount', { count: plugin.optionsSpec.length }) }}
             </span>
           </div>
         </CardContent>
@@ -119,12 +119,12 @@ function getStateBadgeVariant(state: string): 'default' | 'secondary' | 'destruc
         <!-- Current Options -->
         <div v-if="selectedPlugin" class="space-y-4">
           <div v-if="Object.keys(selectedPlugin.options).length > 0">
-            <h4 class="mb-2 text-sm font-medium">Current Values</h4>
+            <h4 class="mb-2 text-sm font-medium">{{ $t('plugins.currentValues') }}</h4>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Option</TableHead>
-                  <TableHead>Value</TableHead>
+                  <TableHead>{{ $t('plugins.option') }}</TableHead>
+                  <TableHead>{{ $t('plugins.value') }}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -138,14 +138,14 @@ function getStateBadgeVariant(state: string): 'default' | 'secondary' | 'destruc
 
           <!-- Options Spec -->
           <div v-if="selectedPlugin.optionsSpec.length > 0">
-            <h4 class="mb-2 text-sm font-medium">Options Schema</h4>
+            <h4 class="mb-2 text-sm font-medium">{{ $t('plugins.optionsSchema') }}</h4>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Required</TableHead>
-                  <TableHead>Default</TableHead>
+                  <TableHead>{{ $t('plugins.name') }}</TableHead>
+                  <TableHead>{{ $t('plugins.type') }}</TableHead>
+                  <TableHead>{{ $t('plugins.required') }}</TableHead>
+                  <TableHead>{{ $t('plugins.default') }}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -161,7 +161,7 @@ function getStateBadgeVariant(state: string): 'default' | 'secondary' | 'destruc
                   </TableCell>
                   <TableCell>
                     <Badge :variant="spec.required ? 'destructive' : 'outline'" class="text-xs">
-                      {{ spec.required ? 'required' : 'optional' }}
+                      {{ spec.required ? $t('plugins.required') : $t('plugins.optional') }}
                     </Badge>
                   </TableCell>
                   <TableCell class="text-sm">{{ JSON.stringify(spec.default) }}</TableCell>
@@ -171,7 +171,7 @@ function getStateBadgeVariant(state: string): 'default' | 'secondary' | 'destruc
           </div>
 
           <div v-if="selectedPlugin.optionsSpec.length === 0 && Object.keys(selectedPlugin.options).length === 0">
-            <p class="text-sm text-muted-foreground">This plugin has no configurable options.</p>
+            <p class="text-sm text-muted-foreground">{{ $t('plugins.noConfigurableOptions') }}</p>
           </div>
         </div>
 

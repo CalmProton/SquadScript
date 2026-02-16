@@ -3,11 +3,17 @@ import tailwindcss from '@tailwindcss/vite';
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: [
+    '@nuxt/icon',
     '@pinia/nuxt',
     'nuxt-i18n-micro',
-    'shadcn-nuxt',
     'nuxt-auth-utils',
   ],
+
+  icon: {
+    serverBundle: {
+      collections: ['solar', 'svg-spinners'],
+    },
+  },
 
   // Disable SSR - this is a dashboard app with CSR only
   ssr: false,
@@ -86,12 +92,6 @@ export default defineNuxtConfig({
         secure: process.env.NODE_ENV === 'production',
       },
     },
-  },
-
-  // shadcn-nuxt configuration
-  shadcn: {
-    prefix: '',
-    componentDir: './app/components/ui',
   },
 
   // Nuxt 4 compatibility mode

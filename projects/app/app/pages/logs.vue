@@ -11,6 +11,7 @@ import {
 } from '~/components/ui/select';
 
 const { $t } = useNuxtApp();
+const { formatDateTime } = useLocaleFormatters();
 
 definePageMeta({
   middleware: 'auth',
@@ -62,7 +63,10 @@ function getTypeBadgeVariant(type: string): 'default' | 'secondary' | 'destructi
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString();
+  return formatDateTime(iso, {
+    dateStyle: 'medium',
+    timeStyle: 'medium',
+  });
 }
 </script>
 
@@ -70,7 +74,7 @@ function formatDate(iso: string): string {
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <h1 class="text-3xl font-bold">{{ $t('logs.title') }}</h1>
-      <Badge variant="outline">{{ logsStore.total }} entries</Badge>
+      <Badge variant="outline">{{ $t('logs.entriesCount', { count: logsStore.total }) }}</Badge>
     </div>
 
     <!-- Filters -->
@@ -89,7 +93,7 @@ function formatDate(iso: string): string {
 
       <Input
         v-model="playerFilter"
-        :placeholder="$t('logs.filterByPlayer') || 'Filter by player...'"
+        :placeholder="$t('logs.filterByPlayer')"
         class="max-w-[200px]"
         @keyup.enter="onPlayerSearch"
       />
@@ -103,7 +107,7 @@ function formatDate(iso: string): string {
             <TableHead class="w-[180px]">{{ $t('logs.timestamp') }}</TableHead>
             <TableHead class="w-[180px]">{{ $t('logs.type') }}</TableHead>
             <TableHead>{{ $t('logs.message') }}</TableHead>
-            <TableHead class="w-[140px]">{{ $t('logs.source') || 'Player' }}</TableHead>
+            <TableHead class="w-[140px]">{{ $t('logs.sourcePlayer') }}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -128,7 +132,7 @@ function formatDate(iso: string): string {
           </TableRow>
           <TableRow v-if="logsStore.loading">
             <TableCell colspan="4" class="py-8 text-center text-muted-foreground">
-              Loading...
+              {{ $t('general.loading') }}
             </TableCell>
           </TableRow>
         </TableBody>
@@ -138,7 +142,7 @@ function formatDate(iso: string): string {
     <!-- Pagination -->
     <div v-if="logsStore.entries.length < logsStore.total" class="flex justify-center">
       <Button variant="outline" :disabled="logsStore.loading" @click="loadMore">
-        Load more ({{ logsStore.entries.length }}/{{ logsStore.total }})
+        {{ $t('logs.loadMore', { shown: logsStore.entries.length, total: logsStore.total }) }}
       </Button>
     </div>
   </div>

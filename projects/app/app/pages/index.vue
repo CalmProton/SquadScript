@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Badge } from '~/components/ui/badge';
 
 const { $t } = useNuxtApp();
+const { formatNumber } = useLocaleFormatters();
 
 definePageMeta({
   middleware: 'auth',
@@ -29,10 +30,12 @@ onMounted(async () => {
 
 const formattedUptime = computed(() => {
   const seconds = serverStore.uptime;
-  if (!seconds) return '0m';
+  if (!seconds) return `0${$t('dashboard.time.minuteShort')}`;
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  return h > 0
+    ? `${formatNumber(h)}${$t('dashboard.time.hourShort')} ${formatNumber(m)}${$t('dashboard.time.minuteShort')}`
+    : `${formatNumber(m)}${$t('dashboard.time.minuteShort')}`;
 });
 
 const statusColor = computed(() => {
@@ -48,7 +51,9 @@ const statusLabel = computed(() => {
   switch (serverStore.status) {
     case 'online': return $t('dashboard.online');
     case 'offline': return $t('dashboard.offline');
-    default: return serverStore.status;
+    case 'starting': return $t('dashboard.starting');
+    case 'stopping': return $t('dashboard.stopping');
+    default: return $t('dashboard.offline');
   }
 });
 </script>
@@ -92,7 +97,10 @@ const statusLabel = computed(() => {
             </span>
           </p>
           <p v-if="serverStore.info" class="mt-1 text-xs text-muted-foreground">
-            Queue: {{ serverStore.info.publicQueue }} public, {{ serverStore.info.reserveQueue }} reserve
+            {{ $t('dashboard.queueLabel', {
+              public: formatNumber(serverStore.info.publicQueue),
+              reserve: formatNumber(serverStore.info.reserveQueue),
+            }) }}
           </p>
         </CardContent>
       </Card>
@@ -106,10 +114,10 @@ const statusLabel = computed(() => {
         </CardHeader>
         <CardContent>
           <p class="text-2xl font-bold truncate">
-            {{ serverStore.currentLayer?.name ?? 'Unknown' }}
+            {{ serverStore.currentLayer?.name ?? $t('dashboard.unknownMap') }}
           </p>
           <p v-if="serverStore.nextLayer" class="mt-1 text-xs text-muted-foreground">
-            Next: {{ serverStore.nextLayer.name }}
+            {{ $t('dashboard.nextMapLabel', { map: serverStore.nextLayer.name }) }}
           </p>
         </CardContent>
       </Card>
@@ -129,7 +137,7 @@ const statusLabel = computed(() => {
               :class="serverStore.rconConnected ? 'bg-green-500' : 'bg-red-500'"
             />
             <span class="text-xs text-muted-foreground">
-              RCON {{ serverStore.rconConnected ? 'connected' : 'disconnected' }}
+              {{ serverStore.rconConnected ? $t('dashboard.rconConnected') : $t('dashboard.rconDisconnected') }}
             </span>
           </div>
         </CardContent>
@@ -140,19 +148,19 @@ const statusLabel = computed(() => {
     <div v-if="metricsStore.current" class="grid gap-4 md:grid-cols-3">
       <Card>
         <CardHeader class="pb-2">
-          <CardTitle class="text-sm font-medium text-muted-foreground">Tick Rate</CardTitle>
+          <CardTitle class="text-sm font-medium text-muted-foreground">{{ $t('dashboard.metrics.tickRate') }}</CardTitle>
         </CardHeader>
         <CardContent>
           <p class="text-2xl font-bold">
             {{ metricsStore.current.tickRate?.toFixed(1) ?? '--' }}
-            <span class="text-sm font-normal text-muted-foreground">Hz</span>
+            <span class="text-sm font-normal text-muted-foreground">{{ $t('dashboard.metrics.hz') }}</span>
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader class="pb-2">
-          <CardTitle class="text-sm font-medium text-muted-foreground">CPU</CardTitle>
+          <CardTitle class="text-sm font-medium text-muted-foreground">{{ $t('dashboard.metrics.cpu') }}</CardTitle>
         </CardHeader>
         <CardContent>
           <p class="text-2xl font-bold">
@@ -164,12 +172,12 @@ const statusLabel = computed(() => {
 
       <Card>
         <CardHeader class="pb-2">
-          <CardTitle class="text-sm font-medium text-muted-foreground">Memory</CardTitle>
+          <CardTitle class="text-sm font-medium text-muted-foreground">{{ $t('dashboard.metrics.memory') }}</CardTitle>
         </CardHeader>
         <CardContent>
           <p class="text-2xl font-bold">
             {{ metricsStore.current.memoryMb?.toFixed(0) ?? '--' }}
-            <span class="text-sm font-normal text-muted-foreground">MB</span>
+            <span class="text-sm font-normal text-muted-foreground">{{ $t('dashboard.metrics.mb') }}</span>
           </p>
         </CardContent>
       </Card>

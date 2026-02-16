@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { usePlayersStore } from '~/stores/players';
-import { useRconStore } from '~/stores/rcon';
 import type { PlayerDTO } from '@squadscript/types/api';
 import { Input } from '~/components/ui/input';
 import { Badge } from '~/components/ui/badge';
@@ -111,9 +110,9 @@ async function executeMessage() {
 }
 
 function getTeamLabel(teamId: number | null): string {
-  if (teamId === 1) return 'Team 1';
-  if (teamId === 2) return 'Team 2';
-  return 'Unassigned';
+  if (teamId === 1) return $t('players.teamOne');
+  if (teamId === 2) return $t('players.teamTwo');
+  return $t('players.unassigned');
 }
 </script>
 
@@ -121,13 +120,13 @@ function getTeamLabel(teamId: number | null): string {
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <h1 class="text-3xl font-bold">{{ $t('players.title') }}</h1>
-      <Badge variant="outline">{{ playersStore.playerCount }} online</Badge>
+      <Badge variant="outline">{{ $t('players.onlineCount', { count: playersStore.playerCount }) }}</Badge>
     </div>
 
     <!-- Search -->
     <Input
       v-model="playersStore.search"
-      :placeholder="$t('players.searchPlaceholder') || 'Search players...'"
+      :placeholder="$t('players.searchPlaceholder')"
       class="max-w-sm"
     />
 
@@ -244,11 +243,11 @@ function getTeamLabel(teamId: number | null): string {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="3600">1 hour</SelectItem>
-                <SelectItem value="86400">1 day</SelectItem>
-                <SelectItem value="604800">7 days</SelectItem>
-                <SelectItem value="2592000">30 days</SelectItem>
-                <SelectItem value="0">Permanent</SelectItem>
+                <SelectItem value="3600">{{ $t('players.banDurations.oneHour') }}</SelectItem>
+                <SelectItem value="86400">{{ $t('players.banDurations.oneDay') }}</SelectItem>
+                <SelectItem value="604800">{{ $t('players.banDurations.sevenDays') }}</SelectItem>
+                <SelectItem value="2592000">{{ $t('players.banDurations.thirtyDays') }}</SelectItem>
+                <SelectItem value="0">{{ $t('players.banDurations.permanent') }}</SelectItem>
               </SelectContent>
             </Select>
           </div>

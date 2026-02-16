@@ -48,11 +48,29 @@
     "serverStatus": "Server Status",
     "online": "Online",
     "offline": "Offline",
+    "starting": "Starting",
+    "stopping": "Stopping",
     "players": "Players",
     "currentMap": "Current Map",
     "nextMap": "Next Map",
     "uptime": "Uptime",
-    "quickActions": "Quick Actions"
+    "quickActions": "Quick Actions",
+    "queueLabel": "Queue: {public} public, {reserve} reserve",
+    "unknownMap": "Unknown",
+    "nextMapLabel": "Next: {map}",
+    "rconConnected": "RCON connected",
+    "rconDisconnected": "RCON disconnected",
+    "time": {
+      "hourShort": "h",
+      "minuteShort": "m"
+    },
+    "metrics": {
+      "tickRate": "Tick Rate",
+      "cpu": "CPU",
+      "memory": "Memory",
+      "hz": "Hz",
+      "mb": "MB"
+    }
   },
   "players": {
     "title": "Players",
@@ -77,7 +95,29 @@
     "flagName": "Flag Name",
     "flagValue": "Flag Value",
     "noPlayers": "No players online",
-    "searchPlaceholder": "Search players..."
+    "searchPlaceholder": "Search players...",
+    "teamOne": "Team 1",
+    "teamTwo": "Team 2",
+    "unassigned": "Unassigned",
+    "onlineCount": "{count} online",
+    "banDurations": {
+      "oneHour": "1 hour",
+      "oneDay": "1 day",
+      "sevenDays": "7 days",
+      "thirtyDays": "30 days",
+      "permanent": "Permanent"
+    }
+  },
+  "teams": {
+    "title": "Teams & Squads",
+    "teamOne": "Team 1",
+    "teamTwo": "Team 2",
+    "locked": "Locked",
+    "squadLeader": "SL: {name}",
+    "unassignedCount": "Unassigned ({count})",
+    "squadCount": "{count} squads",
+    "playerCount": "{count} players",
+    "noSquads": "No squads"
   },
   "logs": {
     "title": "Server Logs",
@@ -92,7 +132,10 @@
     "adminActions": "Admin Actions",
     "serverEvents": "Server Events",
     "noLogs": "No logs to display",
-    "filterByPlayer": "Filter by player..."
+    "filterByPlayer": "Filter by player...",
+    "entriesCount": "{count} entries",
+    "sourcePlayer": "Player",
+    "loadMore": "Load more ({shown}/{total})"
   },
   "plugins": {
     "title": "Plugins",
@@ -106,7 +149,19 @@
     "reload": "Reload",
     "noPlugins": "No plugins installed",
     "configuration": "Plugin Configuration",
-    "saveConfig": "Save Configuration"
+    "saveConfig": "Save Configuration",
+    "enabledCount": "{count} enabled",
+    "totalCount": "{count} total",
+    "optionCount": "{count} options",
+    "currentValues": "Current Values",
+    "option": "Option",
+    "value": "Value",
+    "optionsSchema": "Options Schema",
+    "type": "Type",
+    "required": "Required",
+    "optional": "Optional",
+    "default": "Default",
+    "noConfigurableOptions": "This plugin has no configurable options."
   },
   "rcon": {
     "title": "RCON Console",
@@ -115,7 +170,38 @@
     "history": "Command History",
     "response": "Response",
     "clearHistory": "Clear History",
-    "placeholder": "Enter RCON command..."
+    "placeholder": "Enter RCON command...",
+    "broadcast": "Broadcast",
+    "noCommands": "No commands executed yet",
+    "ok": "OK",
+    "error": "Error",
+    "serverBroadcast": "Server Broadcast",
+    "broadcastPlaceholder": "Enter broadcast message...",
+    "sendBroadcast": "Send Broadcast"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "unreadCount": "{count} unread",
+    "markAllAsRead": "Mark all as read",
+    "new": "new",
+    "markRead": "Mark read",
+    "noNotifications": "No notifications yet"
+  },
+  "users": {
+    "title": "User Management",
+    "createUser": "Create User",
+    "username": "Username",
+    "role": "Role",
+    "created": "Created",
+    "actions": "Actions",
+    "noUsers": "No users found",
+    "password": "Password",
+    "create": "Create",
+    "editUserTitle": "Edit User: {username}",
+    "newPasswordHint": "New Password (leave blank to keep current)",
+    "saveChanges": "Save Changes",
+    "deleteUser": "Delete User",
+    "deleteConfirmation": "Are you sure you want to delete {username}? This action cannot be undone."
   },
   "settings": {
     "title": "Settings",
@@ -124,6 +210,28 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System",
-    "saveSettings": "Save Settings"
+    "saveSettings": "Save Settings",
+    "tabs": {
+      "general": "General",
+      "serverConfig": "Server Config",
+      "mapRotation": "Map Rotation"
+    },
+    "locales": {
+      "en": "English",
+      "ru": "Русский",
+      "uk": "Українська"
+    },
+    "config": {
+      "serverCfgTitle": "Server.cfg",
+      "serverCfgDescription": "Edit server configuration (key=value format, one per line).",
+      "saveServerConfig": "Save Server Config",
+      "mapRotationTitle": "MapRotation.cfg",
+      "mapRotationDescription": "One layer per line. Order determines rotation sequence.",
+      "saveMapRotation": "Save Map Rotation",
+      "serverSaved": "Server configuration saved.",
+      "serverSaveFailed": "Failed to save configuration.",
+      "rotationSaved": "Map rotation saved.",
+      "rotationSaveFailed": "Failed to save map rotation."
+    }
   }
 }
