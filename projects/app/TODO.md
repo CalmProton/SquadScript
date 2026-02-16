@@ -14,3 +14,17 @@
 12. Add notifications in the app for important server events (e.g. server down, plugin errors, etc.)
 13. Add support for multiple languages in the app (i18n)
 14. Add dark mode support in the app
+
+# UIs'
+- Server status dashboard (player count, performance metrics, etc.)
+- Server configuration UI (server name, rules, languages, mods, map rotation, etc.)
+- Plugin management UI (enable/disable plugins, configure plugin settings, etc.)
+- User management UI (manage admin, moderators, etc.)
+  - Role configuration (permissions, etc.)
+  - User list view (add, remove, edit users and their roles, etc.)
+- Player management UI (kick, ban, mute, etc.)
+  - Teams and Squads (kick, ban, warn, disband, rename squads, etc.)
+  - Ban and admin action list
+  - Recently disconnected player list
+- Server logs view
+- 
